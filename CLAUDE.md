@@ -165,7 +165,8 @@ Docker Compose generates 3 infrastructure containers plus 2 containers per asset
 - **Skills are instructional markdown** - No code to run/test; changes are documentation only
 - **Docker Image:** Official image is now `ghcr.io/openclaw/openclaw` (Docker Hub is deprecated)
 - **Auth Required:** OpenClaw v2026.1.29+ requires `OPENCLAW_GATEWAY_TOKEN`; containers will exit without it
-- GitHub remote is `fleetclaw/fleetclaw` - use this owner for GitHub API/MCP calls
+- **GitHub:** `fleetclaw/fleetclaw` (https://github.com/fleetclaw/fleetclaw) - use `owner: fleetclaw`, `repo: fleetclaw` for GitHub API/MCP calls
+- **Git remote:** `origin` → `https://github.com/fleetclaw/fleetclaw.git`, default branch `main`
 - `add-asset.sh` inserts before `hosts:` section - verify YAML structure after
 - Model versions in `.env.template` and `docker-compose.yml.j2` need periodic updates
 - MEMORY.md is created by agents at runtime (no template) - `read_when: main_only`, never shared in group contexts

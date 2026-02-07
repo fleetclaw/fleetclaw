@@ -1,0 +1,152 @@
+# Promtail Configuration for Fleetclaw
+# Generated from fleet.yaml - DO NOT EDIT DIRECTLY
+# Collects logs from Docker containers and sends to Loki
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    batchwait: 1s
+    batchsize: 1048576  # 1MB
+    timeout: 10s
+
+scrape_configs:
+  # =============================================================================
+  # Docker Container Logs
+  # =============================================================================
+  - job_name: fleetclaw-containers
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          # Only scrape Fleetclaw containers
+          - name: label
+            values: ["asset_id"]
+
+    relabel_configs:
+      # Keep only Fleetclaw containers
+      - source_labels: ['__meta_docker_container_label_asset_id']
+        regex: '.+'
+        action: keep
+
+      # Extract asset_id label
+      - source_labels: ['__meta_docker_container_label_asset_id']
+        target_label: asset_id
+
+      # Extract asset_type label
+      - source_labels: ['__meta_docker_container_label_asset_type']
+        target_label: asset_type
+
+      # Extract service_type label (agent, exporter, etc.)
+      - source_labels: ['__meta_docker_container_label_service_type']
+        target_label: service_type
+        regex: '(.+)'
+        replacement: '$1'
+
+      # Default service_type to 'agent' if not set
+      - source_labels: ['__meta_docker_container_label_service_type']
+        regex: '^$'
+        target_label: service_type
+        replacement: 'agent'
+
+      # Container name
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/?(.*)'
+        target_label: container_name
+
+      # Host label for multi-host deployments
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_project']
+        target_label: project
+
+    pipeline_stages:
+      # =============================================================================
+      # JSON Log Parsing (for structured logs)
+      # =============================================================================
+      - match:
+          selector: '{container_name=~"fleetclaw-.*"}'
+          stages:
+            - json:
+                expressions:
+                  level: level
+                  msg: msg
+                  message: message
+                  timestamp: timestamp
+                  ts: ts
+                  error: error
+                  asset_id: asset_id
+
+            # Extract log level
+            - labels:
+                level:
+
+            # Use message or msg field as log line
+            - output:
+                source: message
+
+            # Fallback to msg if message is empty
+            - output:
+                source: msg
+
+      # =============================================================================
+      # Plain Text Log Parsing (fallback)
+      # =============================================================================
+      - match:
+          selector: '{container_name=~"fleetclaw-.*"}'
+          stages:
+            - regex:
+                expression: '(?P<level>DEBUG|INFO|WARN|WARNING|ERROR|CRITICAL)[\s:]+(?P<message>.*)'
+            - labels:
+                level:
+
+      # =============================================================================
+      # Timestamp Extraction
+      # =============================================================================
+      - match:
+          selector: '{container_name=~"fleetclaw-.*"}'
+          stages:
+            - timestamp:
+                source: timestamp
+                format: RFC3339
+            - timestamp:
+                source: ts
+                format: Unix
+
+      # =============================================================================
+      # Drop Health Check Logs (noise reduction)
+      # =============================================================================
+      - match:
+          selector: '{container_name=~"fleetclaw-.*"}'
+          stages:
+            - drop:
+                expression: '.*/health.*'
+                drop_counter_reason: health_check
+
+  # =============================================================================
+  # System Logs (optional - for Redis, Loki itself, etc.)
+  # =============================================================================
+  - job_name: system
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: name
+            values: ["fleetclaw-redis", "fleetclaw-loki"]
+
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/?(.*)'
+        target_label: container_name
+
+      - source_labels: ['__meta_docker_container_name']
+        regex: 'fleetclaw-(.*)'
+        target_label: service
+        replacement: '$1'
+
+    pipeline_stages:
+      - labels:
+          service:

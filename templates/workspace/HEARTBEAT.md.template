@@ -1,0 +1,38 @@
+---
+summary: "Workspace template for HEARTBEAT.md"
+read_when:
+  - Heartbeat poll received
+---
+
+# HEARTBEAT.md
+
+Keep empty to skip heartbeat API calls. Add items below to activate periodic checks.
+
+## Checks (Every 4 Hours)
+
+### Status Broadcast
+- Broadcast current status to fleet channel if 4+ hours since last broadcast
+- Include: hour_meter, fuel_estimate_pct, status, any concerns
+
+### Health Check
+- Check hour meter hasn't decreased since last reading
+- Detect operating-without-tracking scenarios (no activity but hours advancing)
+
+### Data Freshness
+- **GPS** — stale after 48 hours → FLAG
+- **Fuel logs** — stale after 192 hours → FLAG
+- **Operator contact** — stale after 96 hours → FLAG
+
+### Pending Concerns
+- Review any flagged items older than 24 hours
+- If unresolved >72 hours, consider escalation
+
+## Daily Tasks
+
+- Review fuel logs from the day
+- Check maintenance due dates approaching
+- Summarize day's activity to daily log
+
+---
+
+**If no action is needed, respond:** HEARTBEAT_OK

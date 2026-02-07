@@ -1,0 +1,64 @@
+{
+  "gateway": {
+    "mode": "local",
+    "port": 8080,
+    "bind": "loopback"
+  },
+  "agents": {
+    "defaults": {
+      "model": { "primary": "${OPENCLAW_MODEL}" },
+      "workspace": "/home/node/.openclaw/workspace",
+      "heartbeat": {
+        "every": "4h",
+        "prompt": "Check HEARTBEAT.md and process any pending tasks"
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "identity": {
+          "name": "{{ asset.asset_id }}",
+          "emoji": "{{ asset_emoji }}",
+          "theme": "{{ 'Fleet Coordinator' if asset.type == 'fleet_coordinator' else asset.type | replace('_', ' ') | title }}"
+        }
+      }
+    ]
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "allowlist",
+      "allowFrom": [{{ supervisor_id }}],
+      "botToken": "${TELEGRAM_TOKEN_{{ asset.asset_id | upper | replace('-', '_') }}}"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": { "enabled": true }
+    }
+  },
+  "logging": {
+    "level": "info"
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "fireworks": {
+        "baseUrl": "https://api.fireworks.ai/inference/v1",
+        "apiKey": "${FIREWORKS_API_KEY}",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "accounts/fireworks/models/kimi-k2p5",
+            "name": "Kimi K2.5",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 262144,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  }
+}

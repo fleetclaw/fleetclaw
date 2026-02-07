@@ -1,0 +1,233 @@
+# Docker Compose for Fleetclaw - {{ host.name }}
+# Generated from fleet.yaml - DO NOT EDIT DIRECTLY
+# Regenerate with: python scripts/generate-configs.py
+
+services:
+{% if host.redis %}
+  # ==========================================================================
+  # REDIS - Shared message broker for fleet communication
+  # ==========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: fleetclaw-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+{% if redis_acl_enabled | default(false) %}
+      - ./config/redis-acl.conf:/etc/redis/users.acl:ro
+{% endif %}
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+{% if redis_acl_enabled | default(false) %}
+      --aclfile /etc/redis/users.acl
+{% endif %}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fleetclaw
+
+  # ==========================================================================
+  # LOKI - Centralized log aggregation
+  # ==========================================================================
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: fleetclaw-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./config/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - fleetclaw
+
+  # ==========================================================================
+  # PROMTAIL - Log collector for Loki
+  # ==========================================================================
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: fleetclaw-promtail
+    restart: unless-stopped
+    volumes:
+      - ./config/promtail-config.yaml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - fleetclaw
+
+  # ==========================================================================
+  # PROMETHEUS - Metrics collection (optional, uncomment to enable)
+  # ==========================================================================
+  # prometheus:
+  #   image: prom/prometheus:v2.47.0
+  #   container_name: fleetclaw-prometheus
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prometheus_data:/prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #     - '--web.enable-lifecycle'
+  #   networks:
+  #     - fleetclaw
+
+{% endif %}
+{% for asset in assets %}
+  # ==========================================================================
+  # {{ asset.asset_id }} - {{ asset.type | title }}
+  # ==========================================================================
+  {{ asset.asset_id | lower | replace('-', '_') }}:
+    build:
+      context: ./docker/openclaw
+      dockerfile: Dockerfile
+    image: fleetclaw-openclaw:2026.2.1
+    container_name: fleetclaw-{{ asset.asset_id | lower }}
+{% if asset.type == 'fleet_coordinator' %}
+    restart: unless-stopped
+{% else %}
+    restart: "no"  # FC manages lifecycle via idle management
+{% endif %}
+    entrypoint: ["node", "/app/openclaw.mjs"]
+    command: ["gateway", "run"]
+    environment:
+      - HOME=/home/node
+      - OPENCLAW_CONFIG_PATH=/home/node/.openclaw/openclaw.json
+      - ASSET_ID={{ asset.asset_id }}
+      - ASSET_TYPE={{ asset.type }}
+      - REDIS_URL=${REDIS_URL}
+      - TELEGRAM_TOKEN_{{ asset.asset_id | upper | replace('-', '_') }}=${TELEGRAM_TOKEN_{{ asset.asset_id | upper | replace('-', '_') }}}
+      - SUPERVISOR_ID=${SUPERVISOR_ID}
+      - SAFETY_ID=${SAFETY_ID}
+      - OWNER_ID=${OWNER_ID}
+      - FIREWORKS_API_KEY=${FIREWORKS_API_KEY}
+      - OPENCLAW_MODEL=${OPENCLAW_MODEL:-{{ default_model }}}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      # Agent data directory (writable for runtime state: telegram/, canvas/, cron/)
+      - ./data/{{ asset.asset_id }}:/home/node/.openclaw
+      # Workspace with SOUL.md and memory
+      - ./workspaces/{{ asset.asset_id }}:/home/node/.openclaw/workspace
+      # Shared skills (all agents)
+      - ./skills/fleet-comms:/app/skills/fleet-comms:ro
+      - ./skills/asset-monitor:/app/skills/asset-monitor:ro
+      - ./skills/escalation-handler:/app/skills/escalation-handler:ro
+{% if asset.type == 'fleet_coordinator' %}
+      # Fleet Coordinator only
+      - ./skills/fleet-coordinator:/app/skills/fleet-coordinator:ro
+      - ./skills/idle-manager:/app/skills/idle-manager:ro
+      - ./skills/onboarding-agent:/app/skills/onboarding-agent:ro
+{% else %}
+      # Asset agents only
+      - ./skills/fuel-log-validator:/app/skills/fuel-log-validator:ro
+      - ./skills/preop-validator:/app/skills/preop-validator:ro
+{% endif %}
+{% if host.redis %}
+    depends_on:
+      redis:
+        condition: service_healthy
+{% endif %}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - fleetclaw
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "asset_id,asset_type"
+    labels:
+      - "asset_id={{ asset.asset_id }}"
+      - "asset_type={{ asset.type }}"
+      - "fleetclaw.managed=true"
+      - "fleetclaw.asset_id={{ asset.asset_id }}"
+{% if asset.type == 'fleet_coordinator' %}
+      - "fleetclaw.role=coordinator"
+{% else %}
+      - "fleetclaw.idle_managed=true"
+{% endif %}
+
+  # --------------------------------------------------------------------------
+  # {{ asset.asset_id }} - Prometheus Exporter Sidecar
+  # --------------------------------------------------------------------------
+  {{ asset.asset_id | lower | replace('-', '_') }}_exporter:
+    build: ./prometheus-exporter
+    container_name: fleetclaw-{{ asset.asset_id | lower }}-exporter
+    restart: unless-stopped
+    environment:
+      - ASSET_ID={{ asset.asset_id }}
+      - ASSET_TYPE={{ asset.type }}
+      - SOUL_FILE=/home/node/.openclaw/workspace/SOUL.md
+      - METRICS_PORT=9090
+    volumes:
+      - ./workspaces/{{ asset.asset_id }}:/home/node/.openclaw/workspace:ro
+    networks:
+      - fleetclaw
+    labels:
+      - "asset_id={{ asset.asset_id }}"
+      - "service_type=exporter"
+
+  # --------------------------------------------------------------------------
+  # {{ asset.asset_id }} - Gatekeeper Sidecar (Permission Routing)
+  # --------------------------------------------------------------------------
+  # Uncomment to enable permission-based access control
+  # {{ asset.asset_id | lower | replace('-', '_') }}_gatekeeper:
+  #   build: ./gatekeeper
+  #   container_name: fleetclaw-{{ asset.asset_id | lower }}-gatekeeper
+  #   restart: unless-stopped
+  #   environment:
+  #     - ASSET_ID={{ asset.asset_id }}
+  #     - AGENT_PORT=8080
+  #     - GATEKEEPER_PORT=8081
+  #     - USERS_FILE=/app/config/users.yaml
+  #     - PERMISSIONS_FILE=/app/config/permissions.yaml
+  #   volumes:
+  #     - ./config/users.yaml:/app/config/users.yaml:ro
+  #     - ./config/permissions.yaml:/app/config/permissions.yaml:ro
+  #   ports:
+  #     - "{{ 8081 + loop.index0 }}:8081"  # External webhook port
+  #   networks:
+  #     - fleetclaw
+  #   labels:
+  #     - "asset_id={{ asset.asset_id }}"
+  #     - "service_type=gatekeeper"
+
+{% endfor %}
+networks:
+  fleetclaw:
+{% if host.redis %}
+    driver: bridge
+{% else %}
+    external: true
+    name: fleetclaw_network
+{% endif %}
+
+volumes:
+{% if host.redis %}
+  redis_data:
+  loki_data:
+  # prometheus_data:  # Uncomment if enabling Prometheus
+{% endif %}
+{% for asset in assets %}
+  {{ asset.asset_id | lower | replace('-', '_') }}_workspace:
+{% endfor %}

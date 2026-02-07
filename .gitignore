@@ -1,0 +1,57 @@
+# Example files (development only)
+example/
+
+# OpenClaw reference repo (cloned for local reference)
+reference/
+
+# Generated files (contains real asset data - not version controlled)
+generated/
+
+# Claude Code user settings
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+.eggs/
+*.egg-info/
+*.egg
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# Fleet configuration with real asset data (use fleet.yaml.example as template)
+config/fleet.yaml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

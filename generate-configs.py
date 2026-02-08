@@ -175,7 +175,7 @@ def generate_compose_service_asset(asset: dict, fleet: dict) -> dict:
             },
             "restart": "unless-stopped",
             "healthcheck": {
-                "test": ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"],
+                "test": ["CMD", "node", "-e", "require('http').get('http://localhost:18789/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"],
                 "interval": "60s",
                 "timeout": "10s",
                 "retries": 3,
@@ -227,7 +227,7 @@ def generate_compose_service_clawvisor(fleet: dict) -> dict:
             },
             "restart": "unless-stopped",
             "healthcheck": {
-                "test": ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"],
+                "test": ["CMD", "node", "-e", "require('http').get('http://localhost:18789/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"],
                 "interval": "60s",
                 "timeout": "10s",
                 "retries": 3,
@@ -299,7 +299,7 @@ def generate_compose_service_clawordinator(fleet: dict) -> dict:
             },
             "restart": "unless-stopped",
             "healthcheck": {
-                "test": ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"],
+                "test": ["CMD", "node", "-e", "require('http').get('http://localhost:18789/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"],
                 "interval": "60s",
                 "timeout": "10s",
                 "retries": 3,

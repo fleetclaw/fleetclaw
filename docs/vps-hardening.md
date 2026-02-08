@@ -289,22 +289,16 @@ Ensure all service ports in `docker-compose.yml` bind to localhost only.
 
 ### Recommended Port Bindings
 
+FleetClaw's generated `docker-compose.yml` does not expose any ports externally by default — containers communicate over the internal `fleetclaw` bridge network. If you need to expose Redis for debugging, always bind to localhost:
+
 ```yaml
 services:
   redis:
     ports:
       - "127.0.0.1:6379:6379"  # NOT "6379:6379"
-
-  loki:
-    ports:
-      - "127.0.0.1:3100:3100"
-
-  prometheus:
-    ports:
-      - "127.0.0.1:9090:9090"
 ```
 
-> **Note:** The current `docker-compose.yml.j2` template exposes Redis and Loki without localhost binding. This is acceptable when Layer 2 (DOCKER-USER) is properly configured, but localhost binding provides defense-in-depth.
+> **Note:** Layer 2 (DOCKER-USER) provides the primary defense, but localhost binding provides defense-in-depth.
 
 ### Verify No External Port Exposure
 
@@ -430,20 +424,11 @@ sudo systemctl restart docker
 
 ## 10. Fleet-Specific Security
 
-### Redis ACL Verification
+### Redis Security
 
-FleetClaw uses Redis ACL for per-asset access control. Verify configuration:
+FleetClaw Tier 1 uses a single Redis instance without ACLs — all agents share the same connection. Redis is not exposed outside the Docker network, so access is restricted to containers on the `fleetclaw` bridge network.
 
-```bash
-# Check ACL is loaded
-docker exec fleetclaw-redis redis-cli ACL LIST
-
-# Test asset isolation (should fail)
-docker exec fleetclaw-redis redis-cli -u redis://ex_001:password@localhost:6379 GET fleet:inbox:DZ-001
-# Expected: (error) NOPERM
-```
-
-See `templates/redis-acl.conf.j2` for the ACL template structure.
+For Tier 2 deployments needing per-agent isolation, configure Redis ACLs and per-agent credentials.
 
 ### Environment File Permissions
 
@@ -457,13 +442,9 @@ ls -la /home/fleetclaw/fleetclaw/.env
 # Expected: -rw------- 1 fleetclaw fleetclaw
 ```
 
-### Gatekeeper Deployment (Optional)
+### Docker Socket Proxy
 
-The Gatekeeper sidecar provides Telegram user permission enforcement. When enabled:
-
-1. Uncomment the gatekeeper service in `docker-compose.yml`
-2. Configure `config/users.yaml` with Telegram user IDs
-3. Configure `config/permissions.yaml` with role-based access
+Clawordinator accesses Docker via `tecnativa/docker-socket-proxy` instead of a direct socket mount. The proxy restricts API access to container, image, and network operations only. See `docs/implementation.md` for details.
 
 ## 11. OVH-Specific Notes
 
@@ -554,9 +535,6 @@ Since all ports are blocked externally, use SSH tunnels or Tailscale:
 ### SSH Tunnel
 
 ```bash
-# Forward Loki to local machine
-ssh -L 3100:localhost:3100 fleetclaw@YOUR_VPS_IP
-
 # Forward Redis (for debugging)
 ssh -L 6379:localhost:6379 fleetclaw@YOUR_VPS_IP
 ```
@@ -581,7 +559,6 @@ curl http://100.x.x.x:3100/ready
 
 ## Related Documentation
 
-- [Resource Monitoring Guide](monitoring.md) - Monitor fleet resource usage
+- [Implementation Guide](implementation.md) - Docker deployment details, resource limits, operational notes
+- [Architecture Overview](architecture.md) - System design and data flow
 - [OpenClaw Security Architecture](https://github.com/openclaw/clawdbot-ansible/blob/main/docs/security.md) - Upstream security docs
-- `templates/redis-acl.conf.j2` - Redis ACL template
-- `gatekeeper/` - Permission routing sidecar (Go)

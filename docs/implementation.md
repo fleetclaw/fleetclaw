@@ -1,6 +1,6 @@
 # FleetClaw Implementation Guide
 
-How the v2 architecture maps to concrete OpenClaw, Redis, and Docker patterns.
+How the architecture maps to concrete OpenClaw, Redis, and Docker patterns.
 
 This document complements `architecture.md` (the what) with the how. Read architecture.md first.
 

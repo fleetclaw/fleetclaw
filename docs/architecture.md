@@ -1,4 +1,4 @@
-# FleetClaw v2 Architecture
+# FleetClaw Architecture
 
 ## What FleetClaw is
 
@@ -63,7 +63,7 @@ Clawvisor can see all asset data but cannot change fleet composition. Clawordina
 
 ## SOUL.md — Minimal identity
 
-Every OpenClaw agent has a SOUL.md file — its identity and personality. In FleetClaw v2, SOUL.md is the vanilla OpenClaw template with exactly two values injected:
+Every OpenClaw agent has a SOUL.md file — its identity and personality. In FleetClaw, SOUL.md is the vanilla OpenClaw template with exactly two values injected:
 
 ```markdown
 ## Core Truths
@@ -76,8 +76,6 @@ Every OpenClaw agent has a SOUL.md file — its identity and personality. In Fle
 That's it. No specs, no fuel thresholds, no escalation chains, no operator directories. The agent learns everything else from its skills and builds context in MEMORY.md over time.
 
 For Clawvisor and Clawordinator, the identity line is simply "You are Clawvisor" or "You are Clawordinator" — no asset ID or serial needed.
-
-This is a deliberate departure from v1, which packed SOUL.md with machine specifications, learned models, operator information, and behavioral templates. In v2, SOUL.md is a name tag. Skills are the job description.
 
 ## Skills — How agents learn behavior
 
@@ -428,30 +426,3 @@ For Tier 2 deployments needing programmable permissions, organizations can build
 | 500+ assets | Multiple Redis instances, regional Clawordinator, custom architecture |
 
 The multi-host model is supported by `fleet.yaml`'s `hosts` section. Each host runs a subset of asset agents pointing to a shared Redis. Clawvisor and Clawordinator can run on any host.
-
-## What changed from v1
-
-| Aspect | v1 | v2 |
-|--------|----|----|
-| SOUL.md | Packed with specs, operators, thresholds, learned models | Vanilla OpenClaw + asset ID + serial |
-| Behavior | Hardcoded in workspace templates (AGENTS.md, BOOT.md, etc.) | Driven entirely by skills |
-| Skills | Existed but workspace docs duplicated their logic | Primary way agents learn behavior |
-| Workspace files | 7+ templates per agent (SOUL, AGENTS, BOOT, HEARTBEAT, TOOLS, USER, IDENTITY) | 2 files: SOUL.md + MEMORY.md |
-| generate-configs | ~1000 lines, Jinja2, 55 soul templates | ~150 lines, 2 string substitutions |
-| Redis schema | Flat keys, STRING/LIST, ad hoc | Hierarchical entity-first, HASH/STREAM, documented |
-| Memory | SOUL.md held state + MEMORY.md for daily logs | MEMORY.md is the living document with structured curation |
-| fleet-comms | Standalone skill for Redis communication | Removed — each skill handles its own Redis internally |
-| Gatekeeper | Go service for routing and permissions | Removed for Tier 1 — Telegram group membership |
-| Template count | 55 soul templates + 7 workspace templates | 0 templates |
-
-## Reference documents
-
-| Document | Purpose | Location |
-|----------|---------|----------|
-| SKILL-TEMPLATE.md | Blank copy-paste starting point for new skills | `skills/SKILL-TEMPLATE.md` |
-| skill-authoring.md | Comprehensive skill authoring guide and philosophy | `docs/skill-authoring.md` |
-| redis-schema.md | Authoritative Redis key reference with field definitions | `docs/redis-schema.md` |
-| memory-curator-asset.md | Asset agent MEMORY.md curation rules | `skills/memory-curator-asset/SKILL.md` |
-| memory-curator-clawvisor.md | Clawvisor MEMORY.md curation rules | `skills/memory-curator-clawvisor/SKILL.md` |
-| memory-curator-clawordinator.md | Clawordinator MEMORY.md curation rules | `skills/memory-curator-clawordinator/SKILL.md` |
-| This document | Architectural overview | `docs/architecture.md` |

@@ -1,0 +1,90 @@
+{
+  "gateway": {
+    "mode": "local",
+    "port": 8080,
+    "bind": "loopback"
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "${OPENCLAW_MODEL}"
+      },
+      "workspace": "/home/node/.openclaw/workspace",
+      "skipBootstrap": true,
+      "bootstrapMaxChars": 15000,
+      "heartbeat": {
+        "every": "{HEARTBEAT}",
+        "prompt": "Run heartbeat tasks from your mounted skills.",
+        "activeHours": {
+          "start": "{SHIFT_START}",
+          "end": "{SHIFT_END}",
+          "timezone": "{TIMEZONE}"
+        }
+      },
+      "tools": {
+        "deny": ["browser", "canvas", "nodes", "cron"]
+      },
+      "skills": {
+        "load": {
+          "extraDirs": ["/app/skills"]
+        }
+      },
+      "sandbox": {
+        "mode": "off"
+      },
+      "compaction": {
+        "memoryFlush": {
+          "softThresholdTokens": 4000
+        }
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "identity": {
+          "name": "{ASSET_ID}",
+          "emoji": "{EMOJI}",
+          "theme": "machinery"
+        }
+      }
+    ]
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "open",
+      "allowFrom": ["*"],
+      "botToken": "${TELEGRAM_TOKEN_{ASSET_ID}}"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": {
+        "enabled": true
+      }
+    }
+  },
+  "logging": {
+    "level": "info"
+  },
+  "models": {
+    "providers": {
+      "fireworks": {
+        "baseUrl": "https://api.fireworks.ai/inference/v1",
+        "apiKey": "${FIREWORKS_API_KEY}",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "${OPENCLAW_MODEL}",
+            "name": "Default",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 262144,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  }
+}

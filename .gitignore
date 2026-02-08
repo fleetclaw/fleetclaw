@@ -1,0 +1,19 @@
+# Generated output (recreate with: python generate-configs.py)
+output/
+
+# Runtime data
+data/
+
+# Environment (contains secrets)
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Redis
+dump.rdb
+appendonly.aof
+
+# Claude Code local settings
+.claude/

@@ -150,8 +150,7 @@ fleetclaw/
 │   ├── meter-reader/SKILL.md
 │   └── ...
 ├── templates/                   # SOUL.md and openclaw.json templates
-├── docker/                      # Dockerfiles (standard + clawordinator)
-└── prompts/                     # Regeneration prompts for Claude Code
+└── docker/                      # Dockerfiles (standard + clawordinator)
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

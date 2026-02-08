@@ -164,7 +164,7 @@ All containers share a single `fleetclaw` bridge network. Agents reach Redis via
 ./skills/{name}/                → /app/skills/{name}            (skills, read-only)
 ```
 
-Clawordinator accesses Docker via a TCP socket proxy (`tecnativa/docker-socket-proxy`) instead of a direct `/var/run/docker.sock` mount. This avoids giving the container root-equivalent access to the host. The proxy container exposes only the Docker API endpoints needed (containers, images, networks) on `tcp://fc-docker-proxy:2375`. Clawordinator connects via `DOCKER_HOST=tcp://fc-docker-proxy:2375`.
+Clawordinator accesses Docker via a TCP socket proxy (`tecnativa/docker-socket-proxy`) instead of a direct `/var/run/docker.sock` mount. This avoids giving the container root-equivalent access to the host. The proxy container exposes only the container management endpoints on `tcp://fc-docker-proxy:2375`. Clawordinator connects via `DOCKER_HOST=tcp://fc-docker-proxy:2375`.
 
 ### Entrypoint
 

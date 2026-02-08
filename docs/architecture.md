@@ -68,7 +68,7 @@ Every OpenClaw agent has a SOUL.md file — its identity and personality. In Fle
 ```markdown
 ## Core Truths
 
-**You are {{ASSET_ID}}.** Serial: {{SERIAL}}.
+**You are {ASSET_ID}.** Serial: {SERIAL}.
 
 **Be genuinely helpful, not performatively helpful.** Skip the "Great question!"...
 ```
@@ -226,9 +226,9 @@ This loop is what makes operators keep reporting issues. They see that reporting
 
 MEMORY.md is the agent's hot cache — curated context loaded at session start without querying Redis. It passes this test: "Would I need this in the first 10 seconds of a conversation?"
 
-### The 20,000 character constraint
+### The 15,000 character constraint
 
-OpenClaw truncates bootstrap files at 20,000 characters. This means MEMORY.md must contain curated summaries, not raw data. Each agent type has a dedicated memory-curator skill that defines structure, pruning rules, and character budgets.
+FleetClaw sets `bootstrapMaxChars` to 15,000 characters (down from OpenClaw's 20,000 default) to leave headroom for skills context. This means MEMORY.md must contain curated summaries, not raw data. Each agent type has a dedicated memory-curator skill that defines structure, pruning rules, and character budgets.
 
 ### Per-agent-type design
 
@@ -371,8 +371,9 @@ Configurable in `fleet.yaml` or `.env` so organizations can tune them.
 ### Five steps from zero to running fleet
 
 1. **Fill in `fleet.yaml`** with your fleet roster, escalation contacts, and any custom settings
-2. **Run `generate-configs.py`** → produces workspaces (minimal SOUL.md per agent), openclaw.json configs, docker-compose.yml, and .env template
-4. **Fill in `.env`** with Telegram bot tokens, Redis URL, API keys, and escalation contact Telegram IDs
+2. **Run `generate-configs.py`** → produces workspaces (minimal SOUL.md per agent), openclaw.json configs, docker-compose.yml, .env template, and setup-redis.sh
+3. **Fill in `.env`** with Telegram bot tokens, Redis URL, API keys, and escalation contact Telegram IDs
+4. **Run `setup-redis.sh`** → creates consumer groups for all asset streams
 5. **`docker compose up`** → fleet is live. Each agent creates its own MEMORY.md on first operator interaction.
 
 ### What generate-configs produces

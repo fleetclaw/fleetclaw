@@ -102,7 +102,7 @@ Every 2 hours:
 
 ### Pruning rules
 
-**Target: under 8,000 characters. Hard ceiling: 15,000 characters** (leaves room for OpenClaw overhead within the 20K bootstrap limit).
+**Target: under 8,000 characters. Hard ceiling: 15,000 characters** (leaves room for OpenClaw overhead within the 15K bootstrap limit).
 
 Prune in this order (least valuable first):
 

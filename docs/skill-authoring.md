@@ -16,7 +16,7 @@ Every skill has two parts:
 ---
 name: fuel-logger
 description: Accept fuel log entries from operators and publish to Redis
-metadata: {"openclaw":{"requires":{"bins":["redis-cli","jq"],"env":["REDIS_URL"]}}}
+metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
 ---
 ```
 

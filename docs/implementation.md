@@ -347,7 +347,6 @@ For Tier 2 deployments, consider:
 The `tecnativa/docker-socket-proxy` restricts which Docker API endpoints Clawordinator can access. The generated compose enables:
 
 - `CONTAINERS=1` — list, inspect, start, stop, restart containers
-- `IMAGES=1` — list images (needed for status checks)
-- `NETWORKS=1` — inspect network connectivity
+- `POST=1` — allow POST requests (needed for start/stop/restart operations)
 
-POST actions (create, remove) are disabled by default. Clawordinator's `asset-onboarder` and `asset-lifecycle` skills work within these constraints by restarting/stopping existing containers. Full container creation (adding new assets at runtime) requires re-running `generate-configs.py` and `docker compose up`.
+Clawordinator's `asset-onboarder` and `asset-lifecycle` skills work within these constraints by restarting/stopping existing containers. Full container creation (adding new assets at runtime) requires re-running `generate-configs.py` and `docker compose up`.

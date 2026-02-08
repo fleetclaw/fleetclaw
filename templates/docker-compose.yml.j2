@@ -95,7 +95,7 @@ services:
     build:
       context: ./docker/openclaw
       dockerfile: Dockerfile
-    image: fleetclaw-openclaw:2026.2.1
+    image: fleetclaw-openclaw:2026.2.6
     container_name: fleetclaw-{{ asset.asset_id | lower }}
 {% if asset.type == 'fleet_coordinator' %}
     restart: unless-stopped

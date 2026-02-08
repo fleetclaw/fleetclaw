@@ -295,7 +295,7 @@ FleetClaw generates configs **for** OpenClaw but doesn't include OpenClaw itself
 **To update OpenClaw:**
 
 ```bash
-docker pull ghcr.io/openclaw/openclaw:2026.2.1
+docker pull ghcr.io/openclaw/openclaw:2026.2.6
 docker compose up -d
 ```
 

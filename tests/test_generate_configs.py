@@ -217,7 +217,7 @@ class TestCopyDockerfileToCompose:
         repo_root = tmp_path / 'repo'
         docker_dir = repo_root / 'docker' / 'openclaw'
         docker_dir.mkdir(parents=True)
-        (docker_dir / 'Dockerfile').write_text('FROM ghcr.io/openclaw/openclaw:2026.2.1\n')
+        (docker_dir / 'Dockerfile').write_text('FROM ghcr.io/openclaw/openclaw:2026.2.6\n')
 
         # Setup compose directory
         compose_dir = tmp_path / 'compose'
@@ -229,7 +229,7 @@ class TestCopyDockerfileToCompose:
         # Verify
         dest_docker = compose_dir / 'docker' / 'openclaw'
         assert dest_docker.exists()
-        assert (dest_docker / 'Dockerfile').read_text() == 'FROM ghcr.io/openclaw/openclaw:2026.2.1\n'
+        assert (dest_docker / 'Dockerfile').read_text() == 'FROM ghcr.io/openclaw/openclaw:2026.2.6\n'
 
     def test_copy_dockerfile_skips_when_source_missing(self, tmp_path):
         """Does nothing if source docker directory doesn't exist."""

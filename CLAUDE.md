@@ -164,6 +164,7 @@ Docker Compose generates 3 infrastructure containers plus 2 containers per asset
 
 - **Skills are instructional markdown** - No code to run/test; changes are documentation only
 - **Docker Image:** Official image is now `ghcr.io/openclaw/openclaw` (Docker Hub is deprecated)
+- **Docker image version bumps touch 4 files:** `docker/openclaw/Dockerfile`, `templates/docker-compose.yml.j2`, `README.md`, `tests/test_generate_configs.py` — CLAUDE.md version refs (line 114 header, line 187 gotcha) are historical markers for when features were introduced, not deployment targets
 - **Auth Required:** OpenClaw v2026.1.29+ requires `OPENCLAW_GATEWAY_TOKEN`; containers will exit without it
 - **GitHub:** `fleetclaw/fleetclaw` (https://github.com/fleetclaw/fleetclaw) - use `owner: fleetclaw`, `repo: fleetclaw` for GitHub API/MCP calls
 - **Git remote:** `origin` → `https://github.com/fleetclaw/fleetclaw.git`, default branch `main`

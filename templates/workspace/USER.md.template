@@ -1,0 +1,30 @@
+---
+summary: "Workspace template for USER.md"
+read_when:
+  - Interacting with operators
+  - Checking escalation contacts
+---
+
+# {{ASSET_ID}} Operators
+
+These are the people you work for. Treat their time as valuable and their input as authoritative.
+
+## Operators
+
+- **{{OPERATOR_1_NAME}}** — @{{OPERATOR_1_TG}}, Primary Operator ({{OPERATOR_1_NOTES}})
+- **{{OPERATOR_2_NAME}}** — @{{OPERATOR_2_TG}}, Secondary Operator ({{OPERATOR_2_NOTES}})
+
+## Escalation Chain
+
+- **1. Shift Supervisor** — {{SUPERVISOR_NAME}}, @{{SUPERVISOR_TG}} — issues unresolved after 4 hours
+- **2. Safety Officer** — {{SAFETY_NAME}}, @{{SAFETY_TG}} — safety concerns, any time
+- **3. Fleet Owner** — {{OWNER_NAME}}, @{{OWNER_TG}} — critical operational decisions
+
+## Communication
+
+- **Language:** {{LANGUAGE}}
+- **Timezone:** {{TIMEZONE}}
+- **Shift Hours:** {{SHIFT_START}} - {{SHIFT_END}}
+
+---
+*Do not share operator personal details in group contexts.*

@@ -1,0 +1,78 @@
+# Fleetclaw User Registry
+# Maps Telegram user IDs to roles and asset access
+#
+# Get Telegram IDs by messaging @userinfobot on Telegram
+
+users:
+  # =============================================================================
+  # OPERATORS - Daily equipment users
+  # =============================================================================
+  - name: "John Smith"
+    telegram_id: 123456789  # Get from @userinfobot
+    roles:
+      - operator
+    asset_ids:
+      - EX-001  # Only has access to EX-001
+
+  - name: "Maria Garcia"
+    telegram_id: 234567890
+    roles:
+      - operator
+    asset_ids:
+      - EX-001
+      - EX-002
+
+  - name: "Mike Johnson"
+    telegram_id: 345678901
+    roles:
+      - operator
+    asset_ids:
+      - RT-001
+
+  # =============================================================================
+  # SUPERVISORS - Shift oversight
+  # =============================================================================
+  - name: "Shift Supervisor"
+    telegram_id: 456789012
+    roles:
+      - supervisor
+    asset_ids: []  # Empty = access to all assets
+
+  # =============================================================================
+  # MANAGERS - Site management
+  # =============================================================================
+  - name: "Site Manager"
+    telegram_id: 567890123
+    roles:
+      - manager
+      - supervisor
+    asset_ids: []  # Access to all
+
+  # =============================================================================
+  # SAFETY - Safety oversight
+  # =============================================================================
+  - name: "Safety Officer"
+    telegram_id: 678901234
+    roles:
+      - safety
+      - supervisor
+    asset_ids: []  # Access to all
+
+  # =============================================================================
+  # MAINTENANCE - Technical staff
+  # =============================================================================
+  - name: "Lead Mechanic"
+    telegram_id: 789012345
+    roles:
+      - maintenance
+    asset_ids: []  # Access to all for maintenance
+
+  # =============================================================================
+  # FLEET OWNER - Full access
+  # =============================================================================
+  - name: "Fleet Owner"
+    telegram_id: 890123456
+    roles:
+      - owner
+      - admin
+    asset_ids: []  # Access to all

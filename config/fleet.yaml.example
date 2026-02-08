@@ -1,0 +1,113 @@
+# Fleet Configuration
+# Copy to fleet.yaml and customize with your actual assets
+#
+# This file is a minimal scaffold with no example assets.
+# This avoids asset ID collisions during testing and CI/CD.
+
+fleet:
+  name: "My Fleet"
+  site: "Site Name"
+
+# Idle management configuration
+# FC manages asset container lifecycle based on activity
+idle_management:
+  enabled: true
+  threshold_days: 7          # Days without activity before idling
+  nightly_check_time: "00:00"
+  activity_types:
+    - fuel_log
+    - pre_op
+    - operator_message
+
+# Redis configuration for inter-asset communication
+redis:
+  host: redis
+  port: 6379
+  # password: ${REDIS_PASSWORD}  # Uncomment for secured Redis
+
+# Telegram configuration
+telegram:
+  # Each asset gets its own bot token for failure isolation
+  # Tokens are stored in .env file as TELEGRAM_TOKEN_<ASSET_ID>
+  api_base: "https://api.telegram.org"
+
+# GPS/Telematics integration (pending API access)
+telematics:
+  provider: rooster
+  api_base: "https://api.roostergps.com/v1"  # Verify actual endpoint
+  api_key: ${ROOSTER_ASSET_TRACKING_API_KEY}  # Pending whitelist approval
+  enabled: false  # Enable when API access granted
+  poll_interval_minutes: 240  # How often to fetch updates (4 hours)
+  fallback: csv_import  # Manual CSV workflow until API available
+  # CSV fallback workflow:
+  #   1. FC downloads activity + meter reading CSVs from Rooster web UI
+  #   2. Custom skill parses CSVs and updates SOUL.md via soul-guard
+  #   3. Flags discrepancies (unexpected meter jumps, location anomalies)
+
+# Fleet Coordinator
+coordinator:
+  asset_id: FLEET-COORD
+  telegram_group: "@fleet_coordination"
+  telegram_user: "@fleet_coordinator_bot"
+  host: host-01  # Which host runs the FC
+
+  # Report schedule
+  hourly_summary: true
+  daily_report_time: "18:00"
+  shift_start: "06:00"
+  shift_end: "18:00"
+
+  # Contacts for escalation
+  manager:
+    name: "Site Manager"
+    telegram: "@site_manager"
+  safety:
+    name: "Safety Officer"
+    telegram: "@safety_officer"
+  owner:
+    name: "Fleet Owner"
+    telegram: "@fleet_owner"
+
+# Asset definitions (assets with dedicated agents)
+# Add your assets here. Example:
+#
+#   - asset_id: EX-001
+#     type: excavator
+#     make: CAT
+#     model: 390F
+#     serial: "CAT0390FXYZ12345"
+#     year: 2020
+#     host: host-01
+#     specs:
+#       weight_tons: 90
+#       tank_capacity: 680
+#       avg_consumption: 28
+#     initial:
+#       hours: 12500
+#     operators:
+#       - name: "Operator Name"
+#         telegram: "@operator_handle"
+#     telegram_group: "@ex001_ops"
+#
+# Supported types: excavator, wheel_loader, rigid_haul_truck, material_handler,
+#   semi_truck, dump_truck, motor_grader, wheel_tractor, skid_steer, track_dozer,
+#   telehandler, water_truck, backhoe, dth_surface_drill, artic_dump_truck,
+#   service_truck, supervisor_truck, work_truck, and 30+ more.
+#   See ASSET_TYPE_METADATA in generate-configs.py for full list.
+assets: []
+
+# Host definitions (for docker-compose generation)
+# At least one host must have redis: true
+hosts:
+  - name: host-01
+    assets: [FLEET-COORD]
+    redis: true
+
+# Shared escalation contacts
+escalation:
+  supervisor:
+    telegram: "@shift_supervisor"
+  safety:
+    telegram: "@safety_officer"
+  owner:
+    telegram: "@fleet_owner"

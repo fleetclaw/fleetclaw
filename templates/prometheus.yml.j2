@@ -1,0 +1,44 @@
+# Prometheus Configuration for Fleetclaw
+# Generated from fleet.yaml - DO NOT EDIT DIRECTLY
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files: []
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Fleetclaw Asset Exporters
+  - job_name: 'fleetclaw'
+    static_configs:
+{% for asset in assets %}
+      - targets: ['{{ asset.asset_id | lower | replace('-', '_') }}_exporter:9090']
+        labels:
+          asset_id: '{{ asset.asset_id }}'
+          asset_type: '{{ asset.type }}'
+{% if asset.host is defined %}
+          host: '{{ asset.host }}'
+{% endif %}
+{% endfor %}
+      # Fleet Coordinator
+      - targets: ['fleet_coord_exporter:9090']
+        labels:
+          asset_id: 'FLEET-COORD'
+          asset_type: 'fleet_coordinator'
+          host: '{{ coordinator.host }}'
+
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.+)_exporter:9090'
+        replacement: '${1}'

@@ -1,0 +1,38 @@
+---
+summary: Fleet Coordinator tool configuration and environment notes
+read_when:
+  - always
+---
+
+# TOOLS.md - FLEET-COORD Environment
+
+> This file describes what tools I have and how to use them.
+
+## Skills Available
+
+- **fleet-coordinator** — Status aggregation, hourly summaries, daily reports
+- **idle-manager** — Asset lifecycle management (wake/idle containers)
+- **onboarding-agent** — Automated asset onboarding to the fleet
+- **fleet-comms** — Fleet-wide coordination and cross-asset queries
+- **asset-monitor** — Staleness detection across the fleet
+- **escalation-handler** — Route escalations to management contacts
+
+## Infrastructure
+
+- **Redis Host:** {{REDIS_HOST}}
+- **My Inbox:** `fleet:inbox:FLEET-COORD`
+- **Fleet Event Stream:** `fleet:events`
+- **Fleet Coordination Channel:** `fleet:coordination`
+
+## Data Sources
+
+- **Asset Status Keys:** `fleet:status:*` (scan pattern for all asset statuses)
+- **Asset Inboxes:** `fleet:inbox:*` (scan pattern for all asset inboxes)
+- **Container Health:** Docker API via asset-monitor skill
+
+## Environment Notes
+
+(Add environment-specific notes here as I learn them)
+
+---
+*This file describes my operating environment. Update as infrastructure changes.*

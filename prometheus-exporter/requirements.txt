@@ -1,0 +1,2 @@
+# Prometheus Exporter Dependencies
+pyyaml>=6.0

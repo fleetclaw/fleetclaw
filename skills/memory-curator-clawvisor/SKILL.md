@@ -61,7 +61,7 @@ Maintain these sections in MEMORY.md. Do not add new top-level sections.
 - Pre-op: {trend} ({percentage this week vs last week})
 - Fuel logs: {trend}
 - Meter readings: {trend}
-- Problem areas: {specific operators or asset types with low compliance}
+- Problem areas: {specific operators or assets with low compliance}
 
 ## Recent Alerts Sent
 - {date}: {alert type} for {asset_id} sent to {person}

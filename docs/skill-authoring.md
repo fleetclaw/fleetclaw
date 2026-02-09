@@ -192,7 +192,6 @@ Summary of patterns:
 | `fleet:escalations` | STREAM | Escalation events |
 | `fleet:index:active` | SET | Active asset IDs |
 | `fleet:index:idle` | SET | Idle asset IDs |
-| `fleet:index:type:{ASSET_TYPE}` | SET | Asset IDs by equipment type |
 
 **Key rules:**
 - Keys are hierarchical, entity-first: `fleet:asset:{ASSET_ID}:{data_type}`
@@ -354,4 +353,4 @@ Things to avoid when writing skills:
 - **Don't hardcode asset-specific details.** Skills are generic. The agent gets its identity from SOUL.md and its history from MEMORY.md. A fuel-logger skill works for excavators and haul trucks without knowing which one it's mounted to.
 - **Don't create new MEMORY.md sections without coordinating with the memory-curator.** The memory-curator skill defines the structure. Your skill writes to existing sections.
 - **Don't use nested JSON in Redis.** Keep Stream entries and HASH fields flat. Nested structures are hard to describe in skill instructions and messy to handle with `redis-cli`.
-- **Don't rely on SCAN for hot paths.** Use index SETs (`fleet:index:active`, `fleet:index:type:excavator`) for cross-asset lookups. SCAN is for admin/debug only.
+- **Don't rely on SCAN for hot paths.** Use index SETs (`fleet:index:active`, `fleet:index:idle`) for cross-asset lookups. SCAN is for admin/debug only.

@@ -69,7 +69,6 @@ SMEMBERS fleet:index:active
 |-----|------|-----------|---------|---------|
 | `fleet:index:active` | SET | Clawordinator | Clawvisor | O(1) active fleet enumeration |
 | `fleet:index:idle` | SET | Clawordinator | Clawvisor | O(1) idle fleet enumeration |
-| `fleet:index:type:{ASSET_TYPE}` | SET | Clawordinator | Clawvisor | Assets by equipment type |
 
 ## Data formats
 
@@ -278,7 +277,7 @@ XADD fleet:directives MAXLEN ~ 200 * \
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `scope` | string | `all`, or asset type (`excavator`), or specific ID (`EX-001`) |
+| `scope` | string | `all`, or specific ID (`EX-001`) |
 | `instruction` | string | The directive text |
 | `issued_by` | string | Role or name of the person who issued it |
 | `expires` | string (ISO datetime) | When this directive is no longer relevant (optional) |

@@ -38,7 +38,7 @@ Every 2 hours, scan the fleet for compliance gaps:
    - **Activity:** No operator interaction at all in the last 48 hours. The machine may be inactive without being marked idle.
 4. Calculate compliance percentages for each category. Pre-op compliance is the number of active assets with a pre-op in the last 12 hours, divided by total active assets. Same pattern for fuel and meter.
 5. Compare current percentages against the values stored in MEMORY.md Compliance Trends. Note whether each category is improving, declining, or stable compared to the last check.
-6. Identify problem areas — specific operators who are consistently non-compliant, or asset types with lower compliance rates.
+6. Identify problem areas — specific operators who are consistently non-compliant, or assets with lower compliance rates.
 7. Update MEMORY.md Compliance Trends section with the new percentages and trend direction.
 
 ### On message

@@ -61,18 +61,6 @@ SKILL_MOUNTS = {
     ],
 }
 
-# Emoji mapping for asset types
-ASSET_EMOJIS = {
-    "excavator": "construction",
-    "haul_truck": "truck",
-    "dozer": "tractor",
-    "grader": "straight_ruler",
-    "loader": "package",
-    "drill": "hole",
-    "water_truck": "droplet",
-    "service_truck": "wrench",
-}
-
 # Consumer groups per stream type
 CONSUMER_GROUPS = {
     "fuel": ["clawvisor", "anomaly-detector"],
@@ -117,7 +105,6 @@ def generate_openclaw_config(
     shift_end: str,
     timezone: str,
     asset_id: str = "",
-    emoji: str = "",
 ) -> dict:
     """Apply substitutions to an openclaw.json template."""
     raw = json.dumps(template)
@@ -126,7 +113,6 @@ def generate_openclaw_config(
     raw = raw.replace("{SHIFT_END}", shift_end)
     raw = raw.replace("{TIMEZONE}", timezone)
     raw = raw.replace("{ASSET_ID}", asset_id)
-    raw = raw.replace("{EMOJI}", emoji)
     return json.loads(raw)
 
 
@@ -470,8 +456,9 @@ def main():
     for asset in assets:
         aid = asset["id"]
         serial = asset.get("serial", "")
-        atype = asset.get("type", "other")
-        emoji = ASSET_EMOJIS.get(atype, "gear")
+
+        if "type" in asset:
+            print(f"  WARNING: asset {aid} has deprecated 'type' field (ignored)", file=sys.stderr)
 
         print(f"  Generating {aid}...")
 
@@ -484,7 +471,7 @@ def main():
 
         # openclaw.json
         oc = generate_openclaw_config(
-            oc_asset_tpl, hb_asset, shift_start, shift_end, timezone, aid, emoji
+            oc_asset_tpl, hb_asset, shift_start, shift_end, timezone, aid
         )
         with open(output / "config" / f"openclaw-{aid}.json", "w") as f:
             json.dump(oc, f, indent=2)

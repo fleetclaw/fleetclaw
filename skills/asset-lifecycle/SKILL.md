@@ -18,7 +18,6 @@ _Idle, wake, or decommission assets. Manages Redis indexes, lifecycle records, a
 - **Redis keys:**
   - `fleet:index:active` — active asset IDs
   - `fleet:index:idle` — idle asset IDs
-  - `fleet:index:type:{ASSET_TYPE}` — asset IDs by type
   - `fleet:asset:{ID}:lifecycle` — current lifecycle state
   - `fleet:asset:{ID}:state` — current operational state
 
@@ -57,8 +56,7 @@ This is a significant action. Before proceeding, confirm with the user: "Decommi
 If the user confirms:
 
 1. Remove the asset ID from whichever index it is in (active or idle).
-2. Remove the asset ID from its type index.
-3. Update the lifecycle HASH: state "decommissioned", since today's date, changed_by "clawordinator."
+2. Update the lifecycle HASH: state "decommissioned", since today's date, changed_by "clawordinator."
 4. Stop and remove the container: `docker stop fc-agent-{id}` then `docker rm fc-agent-{id}`.
 5. Confirm to the user: which asset was decommissioned, that the container is removed, and that historical data is preserved in Redis.
 
@@ -82,12 +80,11 @@ Always validate that the asset ID exists before attempting any operation. Check 
 
   # Decommission
   SREM fleet:index:active {ID}   (or fleet:index:idle)
-  SREM fleet:index:type:{TYPE} {ID}
   HSET fleet:asset:{ID}:lifecycle state "decommissioned" since "{DATE}" changed_by "clawordinator"
   ```
 - **Docker:**
   - Idle: `docker stop fc-agent-{id}`
   - Wake: `docker start fc-agent-{id}`
   - Decommission: `docker stop fc-agent-{id}` then `docker rm fc-agent-{id}`
-- **MEMORY.md updates:** Update Fleet Composition (active/idle counts, type breakdown). Add to Recent Actions with date, asset ID, and operation performed.
+- **MEMORY.md updates:** Update Fleet Composition (active/idle counts). Add to Recent Actions with date, asset ID, and operation performed.
 - **Messages to user:** Confirmation of the operation with asset details and container status.

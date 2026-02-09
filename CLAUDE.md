@@ -52,7 +52,7 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 
 This is the only code in the repo. It reads `fleet.yaml` and outputs everything to `output/`:
 - `workspaces/{ID}/SOUL.md` — per-agent identity (substitutes `{ASSET_ID}`, `{SERIAL}`)
-- `config/openclaw-{ID}.json` — per-agent OpenClaw config (substitutes `{HEARTBEAT}`, `{SHIFT_START}`, `{SHIFT_END}`, `{TIMEZONE}`, `{ASSET_ID}`, `{EMOJI}`)
+- `config/openclaw-{ID}.json` — per-agent OpenClaw config (substitutes `{HEARTBEAT}`, `{SHIFT_START}`, `{SHIFT_END}`, `{TIMEZONE}`, `{ASSET_ID}`)
 - `docker-compose.yml` — full compose with Redis, all agents, docker-socket-proxy
 - `.env.template` — required environment variables
 - `setup-redis.sh` — one-time Redis consumer group creation
@@ -95,7 +95,6 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 ## When Editing generate-configs.py
 
 - `SKILL_MOUNTS` dict controls which skills each agent type receives
-- `ASSET_EMOJIS` maps asset types to Telegram emoji names
 - `CONSUMER_GROUPS` / `FLEET_CONSUMER_GROUPS` define Redis XGROUP setup
 - Template substitution is plain string replace — if you add a new placeholder, update both the template files and the `generate_*` functions
 - The compose output uses PyYAML `dump()` — dict key order matters for readability

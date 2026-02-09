@@ -170,7 +170,7 @@ Clawordinator reads Redis → fleet-level decisions, lifecycle management
 
 Keys are hierarchical, entity-first: `fleet:asset:{ASSET_ID}:{data_type}`
 
-This enables efficient per-asset prefix scanning (`fleet:asset:EX-001:*`) while cross-asset queries use index SETs (`fleet:index:active`, `fleet:index:type:excavator`).
+This enables efficient per-asset prefix scanning (`fleet:asset:EX-001:*`) while cross-asset queries use index SETs (`fleet:index:active`, `fleet:index:idle`).
 
 ### Data types
 
@@ -195,7 +195,6 @@ This enables efficient per-asset prefix scanning (`fleet:asset:EX-001:*`) while 
 | `fleet:escalations` | STREAM | Clawvisor | Clawordinator |
 | `fleet:index:active` | SET | Clawordinator | Clawvisor |
 | `fleet:index:idle` | SET | Clawordinator | Clawvisor |
-| `fleet:index:type:{TYPE}` | SET | Clawordinator | Clawvisor |
 
 See `docs/redis-schema.md` for complete field definitions, data formats, consumer group setup, and retention strategy.
 

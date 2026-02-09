@@ -44,7 +44,7 @@
         "default": true,
         "identity": {
           "name": "{ASSET_ID}",
-          "emoji": "{EMOJI}",
+          "emoji": "gear",
           "theme": "machinery"
         }
       }

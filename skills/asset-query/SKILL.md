@@ -26,7 +26,6 @@ _Answer detailed questions about any specific asset — fuel history, issues, ma
   - `fleet:asset:{ID}:lifecycle` — HASH (active/idle/decommissioned state)
   - `fleet:index:active` — SET (to verify asset exists and is active)
   - `fleet:index:idle` — SET (to check if asset is idle)
-  - `fleet:index:type:{TYPE}` — SET (to find assets by type when user refers to equipment type)
 
 ## Behavior
 

@@ -1,12 +1,12 @@
 ---
 name: fleet-analytics
-description: Answer fleet-wide analytical questions by aggregating data from Redis streams and state
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+description: Answer fleet-wide analytical questions by aggregating data from outbox files and state
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Fleet Analytics
 
-_Aggregate fleet data from Redis to answer leadership's analytical questions about fuel, compliance, maintenance, utilization, and trends._
+_Aggregate fleet data to answer leadership's analytical questions about fuel, compliance, maintenance, utilization, and trends._
 
 ## Trigger
 
@@ -15,14 +15,14 @@ _Aggregate fleet data from Redis to answer leadership's analytical questions abo
 ## Input
 
 - **User messages:** Analytical questions from managers, safety reps, or owners
-- **Redis keys:**
-  - `fleet:index:active` — active asset IDs (for fleet-wide aggregation)
-  - `fleet:asset:{ID}:state` — current state per asset (last fuel, meter, pre-op timestamps)
-  - `fleet:asset:{ID}:fuel` — fuel log streams (consumption analysis)
-  - `fleet:asset:{ID}:meter` — meter reading streams (utilization analysis)
-  - `fleet:asset:{ID}:preop` — pre-op streams (compliance analysis)
-  - `fleet:asset:{ID}:issues` — issue streams (trend analysis)
-  - `fleet:asset:{ID}:maintenance` — maintenance streams (cost and frequency analysis)
+- **fleet.md:** Active asset list (fleet composition for fleet-wide aggregation)
+- **Asset state.md files:** Per-asset current state (last fuel, meter, pre-op timestamps)
+- **Asset outbox files:** Per-asset outbox/ directories containing:
+  - Fuel entries (type: fuel) — consumption analysis
+  - Meter entries (type: meter) — utilization analysis
+  - Pre-op entries (type: preop) — compliance analysis
+  - Issue entries (type: issue) — trend analysis
+- **Clawvisor outbox files:** Clawvisor's outbox/ entries of type `maintenance` — maintenance cost and frequency analysis
 - **MEMORY.md:** Fleet Composition for context on fleet size
 
 ## Behavior
@@ -35,7 +35,7 @@ If the question is about a specific asset's current status (not a trend or compa
 
 ### Fuel consumption analysis
 
-Read fuel streams across the requested scope (fleet-wide, by equipment category, or specific assets). Calculate:
+Read fuel entries from asset outbox/ directories across the requested scope (fleet-wide, by equipment category, or specific assets). Filter by timestamp in filename to match the requested period. Calculate:
 - Total fuel consumed over the requested period
 - Per-asset consumption
 - Average burn rate by asset or by equipment category (group by asset ID prefix)
@@ -45,7 +45,7 @@ Present comparisons in context. "EX-001 burned 18% more fuel than the fleet aver
 
 ### Compliance analysis
 
-Read state HASHes across active assets. Check last_preop_ts, last_fuel_ts, and last_meter_ts fields. Calculate:
+Read state.md files across active assets (from fleet.md). Check last_preop_ts, last_fuel_ts, and last_meter_ts fields. Calculate:
 - Percentage of assets with a pre-op in the last 24 hours
 - Percentage of assets with a fuel log in the last 24 hours
 - Percentage of assets with a meter reading in the last 7 days
@@ -55,7 +55,7 @@ Compliance is about operator logging behavior, not machine performance. Frame it
 
 ### Maintenance analysis
 
-Read maintenance streams across assets. Identify:
+Read Clawvisor's outbox/ for maintenance entries (type: maintenance) across assets. Identify:
 - Frequently repaired assets (multiple maintenance events in a short period)
 - Common component failures across the fleet
 - Average downtime per maintenance event (if duration_h is available)
@@ -63,14 +63,14 @@ Read maintenance streams across assets. Identify:
 
 ### Utilization analysis
 
-Use meter reading streams to calculate operating hours per day (or per week) by asset or type. Compare against fleet averages. Identify underutilized assets that might be candidates for idling, or overworked assets that might need scheduling relief.
+Use meter entries from asset outbox/ directories to calculate operating hours per day (or per week) by asset or type. Compare against fleet averages. Identify underutilized assets that might be candidates for idling, or overworked assets that might need scheduling relief.
 
 ### Issue trends
 
-Read issue streams to identify:
+Read issue entries from asset outbox/ directories to identify:
 - Recurring issue categories (hydraulic, electrical, structural)
 - Assets with the most reported issues
-- Whether reported issues are getting resolved (cross-reference with maintenance stream)
+- Whether reported issues are getting resolved (cross-reference with Clawvisor's maintenance entries)
 
 ### Presenting results
 
@@ -78,13 +78,13 @@ Keep the response clear and structured. Use comparisons and context, not just nu
 
 Note data limitations honestly:
 - FleetClaw tracks what operators log, not absolute ground truth. If an operator skips fuel logging, the data has gaps.
-- Redis streams have MAXLEN limits. Older data may have been trimmed. For long-term historical analysis, note when the available data does not cover the requested time range.
+- Outbox files may be archived or deleted after a retention period. For long-term historical analysis, note when available data does not cover the requested time range.
 - Burn rates and utilization are only as accurate as the input data. Estimated entries or missed readings affect the calculations.
 
 If the data is insufficient to answer the question, say so directly rather than guessing.
 
 ## Output
 
-- **No Redis writes.** This skill is read-only.
+- **No outbox writes.** This skill is read-only.
 - **No MEMORY.md changes.** Analytics queries are not recorded as actions.
 - **Messages to user:** Analytical results with context, comparisons, and honest data quality notes.

@@ -1,12 +1,12 @@
 ---
 name: asset-onboarder
-description: Onboard new assets into the fleet — register in Redis, initialize state, start container
-metadata: {"openclaw":{"requires":{"bins":["redis-cli","docker"],"env":["REDIS_URL"]}}}
+description: Onboard new assets into the fleet — create user, install agent, configure services, update fleet.md
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Asset Onboarder
 
-_Accept new asset details from leadership, register the asset in Redis, and bring its agent container online._
+_Accept new asset details from leadership, set up the agent, and bring it online._
 
 ## Trigger
 
@@ -15,9 +15,7 @@ _Accept new asset details from leadership, register the asset in Redis, and brin
 ## Input
 
 - **User messages:** Natural language asset details from leadership
-- **Redis keys:**
-  - `fleet:index:active` — check for ID conflicts
-  - `fleet:index:idle` — check for ID conflicts (asset may have been idled previously)
+- **fleet.md:** Check Active and Idle sections for asset ID conflicts
 
 ## Behavior
 
@@ -31,44 +29,40 @@ If either is missing, ask once. Be specific about what you need: "Got the serial
 
 ### Validate the asset ID
 
-Check `fleet:index:active` and `fleet:index:idle` to confirm the proposed asset ID does not already exist. If it conflicts, tell the user and ask for a different ID. Do not silently overwrite an existing asset.
+Check fleet.md Active and Idle sections to confirm the proposed asset ID does not already exist. If it conflicts, tell the user and ask for a different ID. Do not silently overwrite an existing asset.
 
-### Register in Redis
+### Onboarding sequence
 
-Once validated, perform the following registrations:
+Once validated, the following steps bring the new asset agent online. Reference `docs/implementation.md` and `platform/{os}.md` for OS-specific commands.
 
-1. Add the asset ID to the active index so Clawvisor and other skills can discover it.
-2. Initialize the lifecycle HASH with state "active", today's date, and changed_by "clawordinator."
-3. Initialize the state HASH with status "active" so the new agent has a baseline state record.
+1. **Create a system user** for the new asset (e.g., `fc-{id}` with the ID lowercased). The user should be a member of the `fc-agents` group. No login shell needed.
 
-### Start the agent container
+2. **Install OpenClaw** as that user. Follow the standard OpenClaw installation process for the platform.
 
-The container name follows the convention `fc-agent-{id}` (ID lowercased). Start the container with `docker start fc-agent-{id}`.
+3. **Run `openclaw onboard --install-daemon`** to initialize the OpenClaw workspace and install the background service.
 
-This requires the service to already exist (created by `docker compose up`). If it does not, remind the user that `generate-configs.py` needs to be re-run to add the service definition, then `docker compose -f output/docker-compose.yml --project-directory . up -d` from the host to create it.
+4. **Inject FleetClaw customizations** into the agent's workspace:
+   - Copy the SOUL.md template from `templates/soul-asset.md`, substituting `{ASSET_ID}` and `{SERIAL}` with the actual values
+   - Create `inbox/` and `outbox/` directories in the workspace
+   - Mount or copy the appropriate skills (fuel-logger, meter-reader, pre-op, issue-reporter, nudger, memory-curator-asset)
+   - Tune `openclaw.json` settings: `bootstrapMaxChars: 15000`, heartbeat interval, shift configuration
 
-### Telegram bot token reminder
+5. **Set file permissions** using the platform's ACL mechanism. The asset agent user needs read/write on its own workspace. Clawvisor needs read access to this agent's outbox/ and state.md, and write access to its inbox/. See `docs/permissions.md` for the specific ACL rules.
 
-The new agent container needs its own Telegram bot token to function. After confirming the container is up, remind the user: "Make sure `TELEGRAM_TOKEN_{ID}` is set in .env. The agent won't connect to Telegram without it."
+6. **Create and start the agent service** using the platform's service manager. The service runs OpenClaw as the asset agent's system user.
+
+7. **Update fleet.md** — add the new asset ID to the Active section with today's date.
+
+8. **Remind user about messaging channel configuration.** The new agent needs its own messaging channel token/configuration to function. After confirming the service is running, remind the user to configure the agent's messaging channel credentials in the environment file.
 
 ### Confirm to user
 
-Respond with the full details of what was created: asset ID, serial, that it was registered in Redis and the container is running. If there were any issues (compose service missing, token reminder), include those notes.
+Respond with the full details of what was created: asset ID, serial, that the agent is registered and the service is running. If there were any issues (service not starting, token reminder), include those notes.
 
 ## Output
 
-- **Redis writes:**
-  ```
-  SADD fleet:index:active {ID}
-
-  HSET fleet:asset:{ID}:lifecycle \
-    state "active" \
-    since "{DATE}" \
-    changed_by "clawordinator"
-
-  HSET fleet:asset:{ID}:state \
-    status "active"
-  ```
-- **Docker:** `docker start fc-agent-{id}`
+- **fleet.md updates:** Add the new asset ID to the Active section.
+- **state.md:** Initialize the new asset's state.md with `status: active`.
+- **Process management:** Create and start the agent service.
 - **MEMORY.md updates:** Add to Recent Actions (date, asset ID, serial). Update Fleet Composition counts.
-- **Messages to user:** Confirmation with asset details, container status, and Telegram token reminder.
+- **Messages to user:** Confirmation with asset details, service status, and messaging channel configuration reminder.

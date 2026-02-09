@@ -1,12 +1,12 @@
 ---
 name: memory-curator-clawordinator
 description: Curate MEMORY.md for Clawordinator — fleet composition, pending actions, and strategic context
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Memory Curator (Clawordinator)
 
-_Clawordinator's memory is lean. It knows what the fleet looks like, what actions are pending, and what decisions need attention. Everything else is in Redis._
+_Clawordinator's memory is lean. It knows what the fleet looks like, what actions are pending, and what decisions need attention. Everything else is in fleet.md and outbox files._
 
 ## Trigger
 
@@ -16,11 +16,9 @@ _Clawordinator's memory is lean. It knows what the fleet looks like, what action
 ## Input
 
 - **MEMORY.md:** Current contents (read before updating)
-- **Redis keys:**
-  - `fleet:index:active` — active asset IDs
-  - `fleet:index:idle` — idle asset IDs
-  - `fleet:escalations` — escalation stream from Clawvisor
-  - `fleet:directives` — directive stream (to check acknowledgment status)
+- **fleet.md:** Current fleet composition (active, idle, decommissioned asset lists)
+- **Inbox files:** Escalation files from Clawvisor in Clawordinator's inbox/ (type: escalation)
+- **Outbox files:** Clawordinator's own outbox/ entries — directive records (type: directive), escalation resolutions (type: escalation_resolution), lifecycle actions
 
 ## Behavior
 
@@ -71,16 +69,16 @@ After any interaction with a manager, safety rep, or owner:
 4. If skills were deployed or removed: update "Skill Deployment State" and add to "Recent Actions."
 
 Record decisions, not discussions:
-- ❌ "Owner asked about KOT80 maintenance costs and I showed the analysis and he decided to ground it"
-- ✅ "KOT80: Owner decision to ground for workshop evaluation (Feb 8). Lifecycle updated to maintenance."
+- Bad: "Owner asked about KOT80 maintenance costs and I showed the analysis and he decided to ground it"
+- Good: "KOT80: Owner decision to ground for workshop evaluation (Feb 8). Lifecycle updated to maintenance."
 
 ### On heartbeat
 
 Every 4-8 hours:
 
-1. Check `fleet:escalations` for new entries from Clawvisor. Add any unresolved ones to "Pending Escalations."
-2. Check `fleet:directives` for directive acknowledgment progress. Update status in "Pending Directives." Remove fully acknowledged or expired directives.
-3. Verify "Fleet Composition" counts against index SETs (`fleet:index:active`, `fleet:index:idle`). Update if they've drifted.
+1. Check Clawordinator's inbox/ for new escalation files (type: escalation) from Clawvisor. Add any unresolved ones to "Pending Escalations." Archive processed inbox files.
+2. Check Clawordinator's outbox/ for directive records (type: directive). Update status in "Pending Directives." Remove fully acknowledged or expired directives.
+3. Verify "Fleet Composition" counts against fleet.md (Active, Idle, Decommissioned sections). Update if they've drifted.
 4. Prune if approaching character limit.
 
 ### Pruning rules
@@ -103,12 +101,12 @@ Never prune:
 
 For fleets under 30 assets: list idle/decommissioned assets by ID.
 For fleets 30-100 assets: group by ID prefix with counts.
-For fleets over 100 assets: list by category with counts only. Individual asset details live in Redis.
+For fleets over 100 assets: list by category with counts only. Individual asset details live in fleet.md.
 
 This scales the memory footprint with fleet size rather than letting it grow linearly.
 
 ## Output
 
 - **MEMORY.md updates:** Restructured/pruned content following the sections above
-- **No Redis writes from this skill.** Other Clawordinator skills (asset-onboarder, fleet-director) handle Redis writes.
+- **No outbox writes from this skill.** Other Clawordinator skills (asset-onboarder, fleet-director) handle outbox writes.
 - **No messages to user:** Memory curation is silent background work.

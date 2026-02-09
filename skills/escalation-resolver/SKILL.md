@@ -1,7 +1,7 @@
 ---
 name: escalation-resolver
 description: Surface escalations from Clawvisor to leadership and record their decisions
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Escalation Resolver
@@ -15,19 +15,19 @@ _Present escalations from Clawvisor to leadership, collect decisions, and record
 
 ## Input
 
-- **Redis keys:**
-  - `fleet:escalations` — escalation stream from Clawvisor (pending items to review)
+- **Inbox files:** Escalation files from Clawvisor in Clawordinator's inbox/ (type: escalation)
 - **MEMORY.md:** Pending Escalations section (tracks what has already been surfaced and what is still awaiting a decision)
 
 ## Behavior
 
 ### On heartbeat
 
-Check `fleet:escalations` for new entries since the last read position. For each new escalation:
+Check Clawordinator's inbox/ for new escalation files (type: escalation) from Clawvisor. For each new escalation:
 
-1. Read the entry fields: which asset, what type of issue, a description, and the severity level.
+1. Read the file fields: which asset, what type of issue, a description, and the severity level.
 2. Add it to the Pending Escalations section in MEMORY.md with the asset ID, description, received date, and severity.
 3. If the escalation is severity "critical" or type "safety_concern", mark it prominently in memory so it stands out during the next interaction with leadership.
+4. After processing an inbox escalation file, archive or delete it to prevent re-reading.
 
 Do not message the user on heartbeat. Escalations are surfaced when leadership interacts, not pushed unsolicited. The exception is if a critical escalation has been pending more than 48 hours — see the aging rule below.
 
@@ -48,11 +48,12 @@ Group by severity if there are multiple. Critical items first, then warnings. If
 When leadership makes a decision about an escalation ("ground EX-001", "schedule a workshop inspection for KOT28", "that's fine, close it"):
 
 1. Identify which escalation they are resolving. If ambiguous (multiple escalations for the same asset), confirm which one.
-2. Record the decision: what was decided, who decided it (from their Telegram identity), and when.
+2. Record the decision: what was decided, who decided it (from their messaging identity), and when.
 3. If the decision involves a concrete action (ground the machine, schedule repair, change a procedure, issue a directive), note the action. Do not execute the action automatically — other skills handle those operations. If grounding is needed, suggest using the asset-lifecycle skill to idle the asset.
-4. Remove the resolved escalation from Pending Escalations in MEMORY.md.
-5. Add the decision to Recent Actions in MEMORY.md.
-6. Confirm to the user that the decision is recorded.
+4. Write a resolution file to Clawordinator's outbox/ for audit, and optionally write a resolution notification to Clawvisor's inbox/ so Clawvisor can update its own records.
+5. Remove the resolved escalation from Pending Escalations in MEMORY.md.
+6. Add the decision to Recent Actions in MEMORY.md.
+7. Confirm to the user that the decision is recorded.
 
 ### Aging rule
 
@@ -71,8 +72,20 @@ Clawordinator is the decision layer. Humans make the calls. This skill ensures t
 
 ## Output
 
+- **Outbox writes:** Write a resolution record to Clawordinator's outbox/ when an escalation is resolved:
+  ```
+  ---
+  from: clawordinator
+  type: escalation_resolution
+  timestamp: {ISO-8601}
+  ---
+  asset_id: {ASSET_ID}
+  escalation_type: {the original escalation type}
+  decision: {what was decided}
+  decided_by: {who made the call}
+  ```
+- **Inbox writes:** Optionally write a resolution notification to Clawvisor's inbox/ so Clawvisor can update its Active Escalations.
 - **MEMORY.md updates:**
-  - Pending Escalations: add new escalations from Redis, remove resolved ones
+  - Pending Escalations: add new escalations from inbox, remove resolved ones
   - Recent Actions: add decisions with date, asset ID, what was decided, and who decided
-- **No Redis writes.** Escalation resolution is recorded in MEMORY.md. The original escalation entry in `fleet:escalations` is left intact as an audit record.
 - **Messages to user:** Present escalations when asked. Confirm decisions when recorded. Remind about aged escalations during interactions.

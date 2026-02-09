@@ -38,7 +38,7 @@ If the question is about a specific asset's current status (not a trend or compa
 Read fuel streams across the requested scope (fleet-wide, by type, or specific assets). Calculate:
 - Total fuel consumed over the requested period
 - Per-asset consumption
-- Average burn rate by asset or by type
+- Average burn rate by asset or by equipment category (group by asset ID prefix)
 - Outliers — assets consuming significantly more or less than the average for similar equipment (group by asset ID prefix)
 
 Present comparisons in context. "EX-001 burned 18% more fuel than the fleet average for excavators this month" is more useful than a raw number.

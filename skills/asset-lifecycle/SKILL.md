@@ -57,8 +57,8 @@ If the user confirms:
 
 1. Remove the asset ID from whichever index it is in (active or idle).
 2. Update the lifecycle HASH: state "decommissioned", since today's date, changed_by "clawordinator."
-4. Stop and remove the container: `docker stop fc-agent-{id}` then `docker rm fc-agent-{id}`.
-5. Confirm to the user: which asset was decommissioned, that the container is removed, and that historical data is preserved in Redis.
+3. Stop and remove the container: `docker stop fc-agent-{id}` then `docker rm fc-agent-{id}`.
+4. Confirm to the user: which asset was decommissioned, that the container is removed, and that historical data is preserved in Redis.
 
 ### Validation for all operations
 

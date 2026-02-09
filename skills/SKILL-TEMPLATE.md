@@ -15,7 +15,7 @@ _When does the agent activate this behavior?_
 - **Message** — Operator/user says something relevant
 - **Heartbeat** — Agent checks on its regular polling cycle
 - **Session start** — Agent wakes up and reviews context
-- **Redis event** — New data appears in a watched key
+- **Inbox message** — New file appears in inbox/
 
 _(Delete triggers that don't apply. Most skills use 1-2 triggers.)_
 
@@ -24,7 +24,10 @@ _(Delete triggers that don't apply. Most skills use 1-2 triggers.)_
 _What data does this skill consume?_
 
 - **User messages:** Natural language from operator/user
-- **Redis keys:** _(specify key patterns, e.g., `fleet:asset:{ASSET_ID}:fuel`)_
+- **Inbox files:** _(describe expected message types and their frontmatter fields)_
+- **Outbox files:** _(for Clawvisor/Clawordinator reading other agents' outboxes)_
+- **state.md:** _(what state fields does this skill need?)_
+- **fleet.md:** _(does this skill need fleet composition data?)_
 - **MEMORY.md:** _(what historical context does this skill need?)_
 - **.env variables:** _(API credentials, config — specify variable names)_
 
@@ -42,8 +45,11 @@ _Include examples of interactions where helpful._
 
 _What does this skill produce?_
 
-- **Redis writes:** _(specify key patterns and field names)_
-- **MEMORY.md updates:** _(what to remember after this interaction)_
+- **Outbox writes:** _(describe file format — YAML frontmatter + markdown body)_
+- **Inbox writes:** _(for Clawvisor/Clawordinator writing to other agents' inboxes)_
+- **state.md updates:** _(what fields to update)_
+- **fleet.md updates:** _(Clawordinator only)_
+- **MEMORY.md updates:** _(what to remember)_
 - **Messages to user:** _(conversational responses)_
 - **Escalation flags:** _(when to hand off, and to whom)_
 

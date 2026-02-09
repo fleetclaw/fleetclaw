@@ -125,7 +125,7 @@ A Tier 2 skill author building `tire-pressure-logger` just adds their own `## Ov
 
 ### Skill mounting
 
-No skills are shared across all agent types. Each agent type has its own skill set:
+No skills are shared across agent roles. Each role has its own skill set:
 
 ```
 skills/
@@ -170,7 +170,7 @@ Clawordinator reads Redis → fleet-level decisions, lifecycle management
 
 Keys are hierarchical, entity-first: `fleet:asset:{ASSET_ID}:{data_type}`
 
-This enables efficient per-asset prefix scanning (`fleet:asset:EX-001:*`) while cross-asset queries use index SETs (`fleet:index:active`, `fleet:index:type:excavator`).
+This enables efficient per-asset prefix scanning (`fleet:asset:EX-001:*`) while cross-asset queries use index SETs (`fleet:index:active`, `fleet:index:idle`).
 
 ### Data types
 
@@ -195,7 +195,6 @@ This enables efficient per-asset prefix scanning (`fleet:asset:EX-001:*`) while 
 | `fleet:escalations` | STREAM | Clawvisor | Clawordinator |
 | `fleet:index:active` | SET | Clawordinator | Clawvisor |
 | `fleet:index:idle` | SET | Clawordinator | Clawvisor |
-| `fleet:index:type:{TYPE}` | SET | Clawordinator | Clawvisor |
 
 See `docs/redis-schema.md` for complete field definitions, data formats, consumer group setup, and retention strategy.
 
@@ -228,7 +227,7 @@ MEMORY.md is the agent's hot cache — curated context loaded at session start w
 
 ### The 15,000 character constraint
 
-FleetClaw sets `bootstrapMaxChars` to 15,000 characters (down from OpenClaw's 20,000 default) to leave headroom for skills context. This means MEMORY.md must contain curated summaries, not raw data. Each agent type has a dedicated memory-curator skill that defines structure, pruning rules, and character budgets.
+FleetClaw sets `bootstrapMaxChars` to 15,000 characters (down from OpenClaw's 20,000 default) to leave headroom for skills context. This means MEMORY.md must contain curated summaries, not raw data. Each agent role has a dedicated memory-curator skill that defines structure, pruning rules, and character budgets.
 
 ### Per-agent-type design
 
@@ -258,7 +257,7 @@ Clawvisor's memory is an **exception report, not an inventory**. Only assets wit
 **Clawordinator MEMORY.md** — Target: under 5,000 characters. The leanest.
 
 ```
-## Fleet Composition    — Active/idle counts by type
+## Fleet Composition    — Active/idle counts
 ## Pending Escalations  — Unresolved, from Clawvisor
 ## Pending Directives   — Active, with acknowledgment status
 ## Recent Actions       — Last 10 lifecycle/deployment actions
@@ -283,7 +282,7 @@ Fallback: same operator active >14 hours = new shift period for nudge/pre-op pur
 
 ## Heartbeat intervals
 
-Each agent type has a different heartbeat cadence matching its operational rhythm:
+Each agent role has a different heartbeat cadence matching its operational rhythm:
 
 | Agent | Interval | Rationale |
 |-------|----------|-----------|

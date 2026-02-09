@@ -17,14 +17,13 @@ _Track skill deployment across the fleet. Deploy, remove, or query which skills 
 - **User messages:** Skill deployment requests or queries from managers or owners
 - **Redis keys:**
   - `fleet:index:active` — active asset IDs (for fleet-wide deployment)
-  - `fleet:index:type:{ASSET_TYPE}` — asset IDs by type (for type-scoped deployment)
 - **MEMORY.md:** Skill Deployment State section (current mapping of skills to agents)
 
 ## Behavior
 
 ### Querying current deployment
 
-When leadership asks "what skills does EX-001 have?" or "what's deployed to the excavators?", answer from the Skill Deployment State in MEMORY.md. This section tracks what skills are mounted to each agent type and any per-asset exceptions.
+When leadership asks "what skills does EX-001 have?" or "what's deployed to the excavators?", answer from the Skill Deployment State in MEMORY.md. This section tracks what skills are mounted to each agent role (asset, clawvisor, clawordinator) and any per-asset exceptions.
 
 If the deployment state in MEMORY.md is empty or stale, note that. The authoritative source is the docker-compose.yml volume mounts, but Clawordinator tracks the desired state in memory.
 
@@ -34,7 +33,7 @@ When leadership requests deploying a skill ("add tire-pressure to all excavators
 
 1. **Validate the skill exists.** Check whether the skill directory is present in the skills volume. If the skill name is not recognized, tell the user and ask them to confirm the exact name.
 
-2. **Determine scope.** Same patterns as fleet-director: all active assets, a specific type, or specific asset IDs. Ask once if the scope is unclear.
+2. **Determine scope.** Same patterns as fleet-director: all active assets, or specific asset IDs (resolve category references to IDs from the active index). Ask once if the scope is unclear.
 
 3. **Update MEMORY.md.** Record the desired change in the Skill Deployment State section: which skill, which agents, when the change was requested.
 

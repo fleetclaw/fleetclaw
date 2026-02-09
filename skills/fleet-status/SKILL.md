@@ -18,7 +18,6 @@ _Answer questions about current fleet state — what's running, what's down, how
 - **Redis keys:**
   - `fleet:index:active` — SET of currently active asset IDs
   - `fleet:index:idle` — SET of currently idle asset IDs
-  - `fleet:index:type:{TYPE}` — SET of asset IDs by equipment type
   - `fleet:asset:{ID}:state` — HASH (HMGET specific fields: status, operator, last_seen, last_fuel_ts, last_preop_ts)
   - `fleet:asset:{ID}:lifecycle` — HASH (state, since, changed_by)
 - **MEMORY.md:** Fleet Health section for quick overview without querying every asset
@@ -35,8 +34,7 @@ When someone asks "what's running?" or "fleet overview" or "how many machines ar
 2. If the user needs current numbers (or if MEMORY.md seems stale), query Redis indexes:
    - SCARD `fleet:index:active` for active count
    - SCARD `fleet:index:idle` for idle count
-   - SMEMBERS on type indexes if the user asks about specific equipment types
-3. Present the overview concisely. Group by status first (active, idle, in maintenance, down), then by type if the fleet is large enough that grouping helps.
+3. Present the overview concisely. Group by status first (active, idle, in maintenance, down), then by equipment category (inferred from asset ID prefixes) if the fleet is large enough that grouping helps.
 4. If the fleet has more than 20 assets, summarize by category rather than listing every machine individually. "32 active (18 excavators, 8 haul trucks, 6 others), 4 idle, 2 in maintenance."
 5. If there are assets in the "Needs Attention" section of MEMORY.md, mention them briefly. "Two machines flagged — EX-003 has an open hydraulic issue, KOT28 hasn't logged fuel in 36 hours."
 

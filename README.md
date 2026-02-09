@@ -83,7 +83,7 @@ Next operator session with EX-001:
 
 ## Skills-First Architecture
 
-Agents learn behavior from **skills** -- markdown files containing plain English instructions, not code. Each agent type has its own skill set:
+Agents learn behavior from **skills** -- markdown files containing plain English instructions, not code. Each agent role (asset, clawvisor, clawordinator) has its own skill set:
 
 **Asset Agent:** `fuel-logger` `meter-reader` `pre-op` `issue-reporter` `nudger` `memory-curator`
 

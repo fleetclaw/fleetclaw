@@ -18,7 +18,6 @@ _Accept new asset details from leadership, register the asset in Redis, and brin
 - **Redis keys:**
   - `fleet:index:active` — check for ID conflicts
   - `fleet:index:idle` — check for ID conflicts (asset may have been idled previously)
-  - `fleet:index:type:{ASSET_TYPE}` — current type groupings
 
 ## Behavior
 
@@ -26,11 +25,9 @@ When a manager or owner requests a new asset:
 
 ### Gather required details
 
-Three pieces of information are required: asset ID, equipment type, and serial number. Extract them from the natural language message. People say things like "add new CAT 390F, we'll call it EX-005, serial CAT0390F5DEF67890" or "onboard a Komatsu PC200, ID KOM05, serial KOM200ABC123."
+Two pieces of information are required: asset ID and serial number. Extract them from the natural language message. People say things like "add new CAT 390F, we'll call it EX-005, serial CAT0390F5DEF67890" or "onboard a Komatsu PC200, ID KOM05, serial KOM200ABC123."
 
-If any of the three are missing, ask once. Be specific about what you need: "Got the serial and type. What ID should this asset use?"
-
-Equipment type should be normalized to a short category: excavator, haul_truck, loader, dozer, grader, drill, water_cart, or whatever fits. If uncertain, ask the user to confirm.
+If either is missing, ask once. Be specific about what you need: "Got the serial. What ID should this asset use?"
 
 ### Validate the asset ID
 
@@ -41,9 +38,8 @@ Check `fleet:index:active` and `fleet:index:idle` to confirm the proposed asset 
 Once validated, perform the following registrations:
 
 1. Add the asset ID to the active index so Clawvisor and other skills can discover it.
-2. Add the asset ID to the appropriate type index for type-scoped queries.
-3. Initialize the lifecycle HASH with state "active", today's date, and changed_by "clawordinator."
-4. Initialize the state HASH with status "active" so the new agent has a baseline state record.
+2. Initialize the lifecycle HASH with state "active", today's date, and changed_by "clawordinator."
+3. Initialize the state HASH with status "active" so the new agent has a baseline state record.
 
 ### Start the agent container
 
@@ -57,14 +53,13 @@ The new agent container needs its own Telegram bot token to function. After conf
 
 ### Confirm to user
 
-Respond with the full details of what was created: asset ID, type, serial, that it was registered in Redis and the container is running. If there were any issues (compose service missing, token reminder), include those notes.
+Respond with the full details of what was created: asset ID, serial, that it was registered in Redis and the container is running. If there were any issues (compose service missing, token reminder), include those notes.
 
 ## Output
 
 - **Redis writes:**
   ```
   SADD fleet:index:active {ID}
-  SADD fleet:index:type:{TYPE} {ID}
 
   HSET fleet:asset:{ID}:lifecycle \
     state "active" \
@@ -75,5 +70,5 @@ Respond with the full details of what was created: asset ID, type, serial, that 
     status "active"
   ```
 - **Docker:** `docker compose up -d fc-agent-{id}`
-- **MEMORY.md updates:** Add to Recent Actions (date, asset ID, type, serial). Update Fleet Composition counts and type breakdown.
+- **MEMORY.md updates:** Add to Recent Actions (date, asset ID, serial). Update Fleet Composition counts.
 - **Messages to user:** Confirmation with asset details, container status, and Telegram token reminder.

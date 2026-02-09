@@ -32,31 +32,25 @@ fleet:
 # Each asset gets its own agent container and Telegram bot
 assets:
   - id: EX-001
-    type: excavator
     serial: CAT0390F2ABC12345
 
   - id: EX-002
-    type: excavator
     serial: CAT0390F2DEF67890
 
   - id: KOT28
-    type: haul_truck
     serial: KOM930E4XYZ98765
 
   - id: KOT39
-    type: haul_truck
     serial: KOM930E4UVW54321
 
   - id: DOZ-01
-    type: dozer
     serial: CATD11T8QRS11111
 
   - id: GRD-01
-    type: grader
     serial: CAT16M3LMN22222
 
 # Heartbeat intervals (optional — defaults shown)
-# Controls how often each agent type runs proactive checks
+# Controls how often each agent role runs proactive checks
 heartbeats:
   asset: "30m"          # Nudges land mid-shift
   clawvisor: "2h"       # Oversight cadence

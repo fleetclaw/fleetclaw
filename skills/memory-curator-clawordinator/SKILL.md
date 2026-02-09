@@ -19,7 +19,6 @@ _Clawordinator's memory is lean. It knows what the fleet looks like, what action
 - **Redis keys:**
   - `fleet:index:active` — active asset IDs
   - `fleet:index:idle` — idle asset IDs
-  - `fleet:index:type:{ASSET_TYPE}` — asset IDs by type
   - `fleet:escalations` — escalation stream from Clawvisor
   - `fleet:directives` — directive stream (to check acknowledgment status)
 
@@ -35,7 +34,7 @@ Maintain these sections in MEMORY.md. Do not add new top-level sections.
 # MEMORY.md
 
 ## Fleet Composition
-- Active: {count} assets ({breakdown by type}: {n} excavators, {n} haul trucks, ...)
+- Active: {count} assets ({list IDs if <20, otherwise group by ID prefix})
 - Idle: {count} assets ({list IDs if <10, otherwise just count})
 - Decommissioned recently: {any in last 30 days}
 
@@ -49,7 +48,7 @@ Maintain these sections in MEMORY.md. Do not add new top-level sections.
 - (Only active directives. Remove expired or fully acknowledged ones.)
 
 ## Recent Actions
-- {date}: Onboarded {ASSET_ID} ({type}, serial {SERIAL})
+- {date}: Onboarded {ASSET_ID} (serial {SERIAL})
 - {date}: Decommissioned {ASSET_ID} (reason: {reason})
 - {date}: Idled {ASSET_ID} / Woke {ASSET_ID}
 - {date}: Deployed skill {skill_name} to {scope}
@@ -92,7 +91,7 @@ Prune in this order (least valuable first):
 
 1. "Recent Actions" — reduce from 10 to 5 entries (keep only last 30 days)
 2. "Pending Directives" — remove any that are expired or >7 days old and fully acknowledged
-3. "Fleet Composition" — compress type breakdown if fleet is large (e.g., "12 loaders" instead of listing subtypes)
+3. "Fleet Composition" — compress asset list if fleet is large (group by ID prefix)
 4. "Skill Deployment State" — remove "Recent changes" detail, keep only current state
 
 Never prune:
@@ -103,7 +102,7 @@ Never prune:
 ### Fleet composition detail level
 
 For fleets under 30 assets: list idle/decommissioned assets by ID.
-For fleets 30-100 assets: list by type with counts.
+For fleets 30-100 assets: group by ID prefix with counts.
 For fleets over 100 assets: list by category with counts only. Individual asset details live in Redis.
 
 This scales the memory footprint with fleet size rather than letting it grow linearly.

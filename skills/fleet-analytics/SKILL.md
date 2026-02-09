@@ -17,14 +17,13 @@ _Aggregate fleet data from Redis to answer leadership's analytical questions abo
 - **User messages:** Analytical questions from managers, safety reps, or owners
 - **Redis keys:**
   - `fleet:index:active` — active asset IDs (for fleet-wide aggregation)
-  - `fleet:index:type:{ASSET_TYPE}` — asset IDs by type (for type-level comparisons)
   - `fleet:asset:{ID}:state` — current state per asset (last fuel, meter, pre-op timestamps)
   - `fleet:asset:{ID}:fuel` — fuel log streams (consumption analysis)
   - `fleet:asset:{ID}:meter` — meter reading streams (utilization analysis)
   - `fleet:asset:{ID}:preop` — pre-op streams (compliance analysis)
   - `fleet:asset:{ID}:issues` — issue streams (trend analysis)
   - `fleet:asset:{ID}:maintenance` — maintenance streams (cost and frequency analysis)
-- **MEMORY.md:** Fleet Composition for context on fleet size and type breakdown
+- **MEMORY.md:** Fleet Composition for context on fleet size
 
 ## Behavior
 
@@ -36,11 +35,11 @@ If the question is about a specific asset's current status (not a trend or compa
 
 ### Fuel consumption analysis
 
-Read fuel streams across the requested scope (fleet-wide, by type, or specific assets). Calculate:
+Read fuel streams across the requested scope (fleet-wide, by equipment category, or specific assets). Calculate:
 - Total fuel consumed over the requested period
 - Per-asset consumption
-- Average burn rate by asset or by type
-- Outliers — assets consuming significantly more or less than the average for their type
+- Average burn rate by asset or by equipment category (group by asset ID prefix)
+- Outliers — assets consuming significantly more or less than the average for similar equipment (group by asset ID prefix)
 
 Present comparisons in context. "EX-001 burned 18% more fuel than the fleet average for excavators this month" is more useful than a raw number.
 

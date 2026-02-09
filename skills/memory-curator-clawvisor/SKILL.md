@@ -1,27 +1,26 @@
 ---
 name: memory-curator-clawvisor
 description: Curate MEMORY.md for Clawvisor — fleet-wide context as an exception report, not an inventory
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Memory Curator (Clawvisor)
 
-_Clawvisor's MEMORY.md is an exception report, not an inventory. Only problems and patterns make it into memory. Everything normal lives in Redis._
+_Clawvisor's MEMORY.md is an exception report, not an inventory. Only problems and patterns make it into memory. Everything normal lives in asset outbox files and state.md._
 
 ## Trigger
 
 - **Session end** — After each interaction (with mechanics, foremen, supervisors), distill what happened
-- **Heartbeat** — Every 2 hours, refresh from Redis (new anomalies, escalation updates, compliance changes)
+- **Heartbeat** — Every 2 hours, refresh from fleet data (new anomalies, escalation updates, compliance changes)
 
 ## Input
 
 - **MEMORY.md:** Current contents (read before updating)
-- **Redis keys:**
-  - `fleet:index:active` — current active asset list
-  - `fleet:asset:{ASSET_ID}:state` — per-asset state (read via HMGET for specific fields)
-  - `fleet:asset:{ASSET_ID}:alerts` — recent anomaly alerts
-  - `fleet:escalations` — escalation stream
-  - `fleet:asset:{ASSET_ID}:maintenance` — recent maintenance events
+- **fleet.md:** Current fleet composition (active, idle, decommissioned asset lists)
+- **Asset state.md files:** Per-asset operational state (compliance timestamps, operator, status)
+- **Asset outbox files:** Per-asset outbox/ directories for recent activity data
+- **Clawvisor outbox files:** Clawvisor's own outbox/ entries — type `alert` (recent anomaly alerts), type `escalation` (escalation records), type `maintenance` (recent maintenance events)
+- **Clawvisor inbox files:** Incoming messages (escalation resolutions from Clawordinator)
 
 ## Behavior
 
@@ -32,7 +31,7 @@ Clawvisor oversees the entire fleet. With 64+ assets, MEMORY.md cannot hold per-
 - **Compliance trends** — improving or declining, not raw numbers
 - **Active escalations** — the 2-3 currently open, with context
 
-If a mechanic asks "what's going on with KOE57?" and KOE57 is healthy, Clawvisor won't find it in MEMORY.md — and that's correct. It queries Redis for KOE57's state and streams. MEMORY.md only contains assets that are exceptional.
+If a mechanic asks "what's going on with KOE57?" and KOE57 is healthy, Clawvisor won't find it in MEMORY.md — and that's correct. It reads KOE57's state.md and outbox files. MEMORY.md only contains assets that are exceptional.
 
 ### Structure
 
@@ -82,23 +81,22 @@ After any interaction with a mechanic, foreman, or supervisor:
 4. Update "Fleet Health" summary if anything materially changed.
 
 Do not record the conversation. Record the outcome:
-- ❌ "Supervisor Mike asked about pre-op compliance and I told him it was 82% fleet-wide and he said that was concerning"
-- ✅ "Pre-op compliance: 82% fleet-wide (Feb 8). Supervisor flagged as concern."
+- Bad: "Supervisor Mike asked about pre-op compliance and I told him it was 82% fleet-wide and he said that was concerning"
+- Good: "Pre-op compliance: 82% fleet-wide (Feb 8). Supervisor flagged as concern."
 
 ### On heartbeat
 
 Every 2 hours:
 
-1. Read `fleet:index:active` to confirm fleet size. Update "Fleet Health" if changed.
-2. Scan active assets' state HASHes for compliance gaps:
-   - For each asset in `fleet:index:active`, read `HMGET fleet:asset:{ID}:state last_fuel_ts last_preop_ts last_meter_ts last_seen`
+1. Read the Active section of fleet.md to confirm fleet size. Update "Fleet Health" if changed.
+2. Scan active assets' state.md files for compliance gaps:
+   - For each asset listed as Active in fleet.md, read the asset's state.md for last_fuel_ts, last_preop_ts, last_meter_ts, last_seen
    - Flag assets with stale data (no fuel log >24h, no pre-op this shift, no meter reading >7 days, no activity >48h)
    - Add newly flagged assets to "Needs Attention." Remove assets that are no longer flagged.
-3. Check `fleet:escalations` for new entries since last heartbeat. Add to "Active Escalations."
-4. Check alert streams for recently generated alerts. Add to "Recent Alerts Sent."
-5. Prune if approaching character limit.
-
-**Important:** When iterating over active assets, use `SMEMBERS fleet:index:active` and then targeted HMGET calls — never SCAN the keyspace.
+3. Check Clawvisor's outbox/ for recent escalation files (type: escalation) since last heartbeat. Add to "Active Escalations."
+4. Check Clawvisor's outbox/ for recent alert files (type: alert). Add to "Recent Alerts Sent."
+5. Check Clawvisor's inbox/ for escalation resolution messages from Clawordinator. Remove resolved escalations from "Active Escalations."
+6. Prune if approaching character limit.
 
 ### Pruning rules
 
@@ -130,5 +128,5 @@ If the fleet grows beyond ~150 assets, consider splitting Clawvisor into zone-ba
 ## Output
 
 - **MEMORY.md updates:** Restructured/pruned content following the sections above
-- **No Redis writes from this skill.** Other Clawvisor skills (anomaly-detector, escalation-handler) handle Redis writes.
+- **No outbox writes from this skill.** Other Clawvisor skills (anomaly-detector, escalation-handler) handle outbox writes.
 - **No messages to user:** Memory curation is silent background work.

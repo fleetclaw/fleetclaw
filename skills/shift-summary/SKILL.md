@@ -1,7 +1,7 @@
 ---
 name: shift-summary
 description: Generate shift or daily summaries on request — aggregate fleet activity, compliance, issues, and maintenance
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Shift Summary
@@ -15,14 +15,9 @@ _Generate shift or daily summaries on request — aggregate fleet activity, comp
 ## Input
 
 - **User messages:** Summary requests with optional time period ("today", "last shift", "this week", "last 24 hours")
-- **Redis keys:**
-  - `fleet:index:active` — SET of active asset IDs
-  - `fleet:asset:{ID}:fuel` — STREAM (XRANGE for the requested time period)
-  - `fleet:asset:{ID}:meter` — STREAM (XRANGE for the requested time period)
-  - `fleet:asset:{ID}:preop` — STREAM (XRANGE for the requested time period)
-  - `fleet:asset:{ID}:issues` — STREAM (XRANGE for the requested time period)
-  - `fleet:asset:{ID}:maintenance` — STREAM (XRANGE for the requested time period)
-  - `fleet:asset:{ID}:alerts` — STREAM (XRANGE for the requested time period)
+- **fleet.md:** Active asset list (fleet composition)
+- **Asset outbox files:** Per-asset outbox/ directories containing entries of all types (fuel, meter, preop, issue) — filtered by timestamp in filename to match the requested time period
+- **Clawvisor outbox files:** Clawvisor's own outbox/ entries (type: maintenance, alert) for the requested time period
 - **MEMORY.md:** Fleet Health and Compliance Trends sections for context
 
 ## Behavior
@@ -39,18 +34,18 @@ Parse the user's request for a time period:
 - "Last 24 hours" — exactly that
 - No time specified — default to last 12 hours (one shift)
 
-Convert the time period to a Unix timestamp for XRANGE queries against Redis streams. Use that timestamp as the start parameter, with "+" as the end.
+Use the timestamp in outbox filenames to filter entries within the requested period.
 
 ### Gathering data
 
-For the determined time period, iterate over active assets and aggregate from their streams. For each asset in `fleet:index:active`:
+For the determined time period, iterate over active assets from fleet.md and read their outbox files. For each active asset:
 
-1. Count fuel entries from the fuel stream for this period.
-2. Count and check pre-op entries — how many were completed, how many passed vs. partial vs. failed.
-3. Count meter readings submitted.
-4. Read any issues reported, noting severity and whether the machine was still operational.
-5. Read any maintenance completed, noting what was done and outcomes.
-6. Read any anomaly alerts generated.
+1. Count fuel entries from outbox/ (type: fuel) within the time period.
+2. Count and check pre-op entries (type: preop) — how many were completed, how many passed vs. partial vs. failed.
+3. Count meter readings (type: meter) submitted.
+4. Read any issues reported (type: issue), noting severity and whether the machine was still operational.
+5. Read any maintenance completed from Clawvisor's outbox/ (type: maintenance) for this asset, noting what was done and outcomes.
+6. Read any anomaly alerts from Clawvisor's outbox/ (type: alert) for this asset.
 
 ### Building the summary
 
@@ -83,5 +78,5 @@ If nothing notable happened during the period, say so briefly. "Quiet shift — 
 ## Output
 
 - **Messages to user:** Formatted shift or period summary, bullet-pointed and scannable.
-- **No Redis writes.** Shift-summary is read-only.
-- **No MEMORY.md changes.** Shift-summary doesn't persist anything — the data lives in Redis streams and MEMORY.md is managed by the memory-curator.
+- **No outbox writes.** Shift-summary is read-only.
+- **No MEMORY.md changes.** Shift-summary doesn't persist anything — the data lives in outbox files and MEMORY.md is managed by the memory-curator.

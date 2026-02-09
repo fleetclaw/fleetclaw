@@ -23,7 +23,7 @@ cp fleet.yaml.example fleet.yaml        # edit with your assets
 python generate-configs.py
 cp output/.env.template .env            # fill in tokens
 bash output/setup-redis.sh              # one-time Redis consumer groups
-docker compose -f output/docker-compose.yml up -d
+docker compose -f output/docker-compose.yml --project-directory . up -d
 ```
 
 There are no tests, linting, or build steps. The only executable code is `generate-configs.py`.
@@ -68,7 +68,7 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 ### Key Config Values
 
 - OpenClaw default gateway port: 18789 (set in openclaw.json templates, matched by healthchecks in generate-configs.py)
-- OpenClaw base image: `ghcr.io/openclaw/openclaw:2026.2.x`
+- OpenClaw base image: `ghcr.io/openclaw/openclaw:v2026.2.6`
 - MEMORY.md bootstrap limit: 15,000 chars (`bootstrapMaxChars` in openclaw.json templates)
 - Heartbeat defaults: asset 30m, clawvisor 2h, clawordinator 4h
 - Container memory: asset 512m, clawvisor/clawordinator 1g, redis 768m
@@ -87,6 +87,8 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 
 ## When Editing Skills
 
+- Skills contain docker/redis commands that agents execute at runtime — when updating command patterns (e.g., compose flags, image tags), grep skills/ too
+- Clawordinator skills must use direct docker commands (`docker start/stop/restart`) — Clawordinator accesses Docker via TCP proxy and cannot run `docker compose`
 - Follow the structure in `skills/SKILL-TEMPLATE.md`
 - YAML frontmatter defines machine-readable contract (name, description, bins, env requirements)
 - `## Behavior` stays freeform — existing Tier 1 skills are the style guide
@@ -98,6 +100,7 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 
 ## When Editing generate-configs.py
 
+- All `docker compose -f output/docker-compose.yml` commands require `--project-directory .` — without it, relative paths resolve from `output/` instead of project root
 - `SKILL_MOUNTS` dict controls which skills each agent role receives
 - `CONSUMER_GROUPS` / `FLEET_CONSUMER_GROUPS` define Redis XGROUP setup
 - Template substitution is plain string replace — if you add a new placeholder, update both the template files and the `generate_*` functions

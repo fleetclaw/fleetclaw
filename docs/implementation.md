@@ -202,7 +202,7 @@ bash output/setup-redis.sh
 # Creates consumer groups for all asset streams
 
 # 5. Launch
-docker compose -f output/docker-compose.yml up -d
+docker compose -f output/docker-compose.yml --project-directory . up -d
 # Fleet is live. Agents create MEMORY.md on first operator interaction.
 ```
 
@@ -348,4 +348,4 @@ The `tecnativa/docker-socket-proxy` restricts which Docker API endpoints Claword
 - `CONTAINERS=1` — list, inspect, start, stop, restart containers
 - `POST=1` — allow POST requests (needed for start/stop/restart operations)
 
-Clawordinator's `asset-onboarder` and `asset-lifecycle` skills work within these constraints by restarting/stopping existing containers. Full container creation (adding new assets at runtime) requires re-running `generate-configs.py` and `docker compose up`.
+Clawordinator's `asset-onboarder` and `asset-lifecycle` skills work within these constraints by restarting/stopping existing containers. Full container creation (adding new assets at runtime) requires re-running `generate-configs.py` and `docker compose -f output/docker-compose.yml --project-directory . up -d`.

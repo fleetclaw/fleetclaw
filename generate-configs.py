@@ -564,7 +564,7 @@ def main():
     print("Next steps:")
     print(f"  1. Copy {output / '.env.template'} to .env and fill in tokens")
     print(f"  2. Run: bash {output / 'setup-redis.sh'}")
-    print(f"  3. Run: docker compose -f {output / 'docker-compose.yml'} up -d")
+    print(f"  3. Run: docker compose -f {output / 'docker-compose.yml'} --project-directory . up -d")
 
 
 if __name__ == "__main__":

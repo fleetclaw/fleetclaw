@@ -124,7 +124,7 @@ cp output/.env.template .env
 bash output/setup-redis.sh
 
 # 5. Launch
-docker compose -f output/docker-compose.yml up -d
+docker compose -f output/docker-compose.yml --project-directory . up -d
 ```
 
 Each agent creates its own `MEMORY.md` on the first operator interaction. No manual initialization needed.

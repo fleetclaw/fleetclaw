@@ -50,7 +50,7 @@ Write the directive to the central `fleet:directives` stream with the full detai
 
 ### Confirm to the user
 
-Tell the user exactly what happened: what instruction was sent, to how many assets, with what scope. If scoped by type or specific IDs, list them. If there is an expiry, confirm it.
+Tell the user exactly what happened: what instruction was sent, to how many assets, with what scope. If scoped by category or specific IDs, list them. If there is an expiry, confirm it.
 
 Example: "Sent 'fire extinguisher check before next shift' to all 14 active assets. No expiry set."
 

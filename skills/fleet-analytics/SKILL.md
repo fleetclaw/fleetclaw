@@ -23,7 +23,7 @@ _Aggregate fleet data from Redis to answer leadership's analytical questions abo
   - `fleet:asset:{ID}:preop` — pre-op streams (compliance analysis)
   - `fleet:asset:{ID}:issues` — issue streams (trend analysis)
   - `fleet:asset:{ID}:maintenance` — maintenance streams (cost and frequency analysis)
-- **MEMORY.md:** Fleet Composition for context on fleet size and type breakdown
+- **MEMORY.md:** Fleet Composition for context on fleet size
 
 ## Behavior
 
@@ -35,7 +35,7 @@ If the question is about a specific asset's current status (not a trend or compa
 
 ### Fuel consumption analysis
 
-Read fuel streams across the requested scope (fleet-wide, by type, or specific assets). Calculate:
+Read fuel streams across the requested scope (fleet-wide, by equipment category, or specific assets). Calculate:
 - Total fuel consumed over the requested period
 - Per-asset consumption
 - Average burn rate by asset or by equipment category (group by asset ID prefix)

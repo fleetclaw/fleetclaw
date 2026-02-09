@@ -257,7 +257,7 @@ Clawvisor's memory is an **exception report, not an inventory**. Only assets wit
 **Clawordinator MEMORY.md** — Target: under 5,000 characters. The leanest.
 
 ```
-## Fleet Composition    — Active/idle counts by type
+## Fleet Composition    — Active/idle counts
 ## Pending Escalations  — Unresolved, from Clawvisor
 ## Pending Directives   — Active, with acknowledgment status
 ## Recent Actions       — Last 10 lifecycle/deployment actions

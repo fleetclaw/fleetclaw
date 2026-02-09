@@ -68,7 +68,7 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 ### Key Config Values
 
 - OpenClaw default gateway port: 18789 (set in openclaw.json templates, matched by healthchecks in generate-configs.py)
-- OpenClaw base image: `ghcr.io/openclaw/openclaw:latest`
+- OpenClaw base image: `ghcr.io/openclaw/openclaw:main`
 - MEMORY.md bootstrap limit: 15,000 chars (`bootstrapMaxChars` in openclaw.json templates)
 - Heartbeat defaults: asset 30m, clawvisor 2h, clawordinator 4h
 - Container memory: asset 512m, clawvisor/clawordinator 1g, redis 768m

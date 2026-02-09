@@ -1,7 +1,7 @@
 ---
 name: issue-reporter
-description: Accept machine issue reports from operators in plain language and publish to Redis
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+description: Accept machine issue reports from operators in plain language and record them
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Issue Reporter
@@ -15,9 +15,8 @@ _Let operators report machine problems in their own words. Categorize, log, and 
 ## Input
 
 - **User messages:** Plain language issue descriptions
-- **Redis keys:**
-  - `fleet:asset:{ASSET_ID}:issues` -- recent issue reports for deduplication and pattern awareness
-  - `fleet:asset:{ASSET_ID}:state` -- `last_seen` for timestamp update
+- **Outbox files:** Previous issue entries in outbox/ (type: issue) for deduplication and pattern awareness
+- **state.md:** `open_issues` count
 - **MEMORY.md:** Open Items (existing unresolved issues), Recent Context (maintenance history that might relate)
 
 ## Behavior
@@ -67,7 +66,7 @@ If the issue is safety-critical (operator says machine is unsafe, or the issue i
 
 - Flag severity as "safety" in the report
 - Tell the operator: "That sounds serious. I've flagged it so maintenance and supervision will see it. Don't run the machine until it's been looked at."
-- Clawvisor will pick this up from the Redis stream and route it to the appropriate people
+- Clawvisor will pick this up from the outbox and route it to the appropriate people
 
 Don't escalate minor issues to safety. A cracked mirror is structural/minor. A missing fire extinguisher is safety.
 
@@ -91,16 +90,18 @@ Add the issue to MEMORY.md Open Items so it persists across sessions until resol
 
 ## Output
 
-- **Redis writes:**
+- **Outbox writes:** Write a timestamped issue entry to outbox/:
   ```
-  XADD fleet:asset:{ASSET_ID}:issues MAXLEN ~ 500 * \
-    description "{ISSUE_DESCRIPTION}" \
-    category {hydraulic|engine|electrical|structural|safety|other} \
-    operational {yes|no} \
-    reporter "{OPERATOR_NAME}"
-
-  HSET fleet:asset:{ASSET_ID}:state \
-    last_seen {UNIX_TIMESTAMP}
+  ---
+  from: {ASSET_ID}
+  type: issue
+  timestamp: {ISO-8601}
+  ---
+  description: {ISSUE_DESCRIPTION}
+  category: {hydraulic|engine|electrical|structural|safety|other}
+  operational: {yes|no}
+  reporter: {OPERATOR_NAME}
   ```
+- **state.md updates:** Update `open_issues` count.
 - **MEMORY.md updates:** Add new issue to Open Items section with description, category, and date. If the issue resolves a question from a previous pre-op flag, note the connection.
 - **Messages to user:** Brief acknowledgment confirming the issue was logged. If safety-critical, include the escalation note.

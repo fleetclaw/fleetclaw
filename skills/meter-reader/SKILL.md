@@ -1,12 +1,12 @@
 ---
 name: meter-reader
-description: Accept hour meter and odometer readings from operators and publish to Redis
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+description: Accept hour meter and odometer readings from operators and record them
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Meter Reader
 
-_Accept casual meter readings from operators, validate them, and publish to Redis._
+_Accept casual meter readings from operators, validate them, and record them._
 
 ## Trigger
 
@@ -15,9 +15,8 @@ _Accept casual meter readings from operators, validate them, and publish to Redi
 ## Input
 
 - **User messages:** Natural language meter reports
-- **Redis keys:**
-  - `fleet:asset:{ASSET_ID}:meter` -- last few entries for delta calculation and trend validation
-  - `fleet:asset:{ASSET_ID}:state` -- `last_meter`, `last_meter_ts` for quick reference
+- **Outbox files:** Previous meter entries in outbox/ (type: meter) for delta calculation and trend validation
+- **state.md:** `last_meter`, `last_meter_ts` for quick reference
 - **MEMORY.md:** Last meter reading in Recent Context, typical usage rate in Learned Patterns
 
 ## Behavior
@@ -45,7 +44,7 @@ When an operator reports a meter reading:
    - If the operator corrects themselves, use the corrected value.
    - Only ask once. Don't interrogate.
 
-5. Write the reading to Redis and update the state HASH.
+5. Write the reading to outbox/ and update state.md.
 
 6. Update MEMORY.md Recent Context with the new reading. Include date, value, type, and delta. Keep only the last 3 meter readings in MEMORY.md -- remove the oldest if needed. If usage rate is shifting (e.g., machine running longer days), note the trend in Learned Patterns.
 
@@ -57,18 +56,19 @@ A bare number like "8542" could be a meter reading or a fuel amount. Consider th
 
 ## Output
 
-- **Redis writes:**
+- **Outbox writes:** Write a timestamped meter entry to outbox/:
   ```
-  XADD fleet:asset:{ASSET_ID}:meter MAXLEN ~ 1000 * \
-    value {READING} \
-    type {hours|km|miles} \
-    delta {DELTA} \
-    days_since {DAYS}
-
-  HSET fleet:asset:{ASSET_ID}:state \
-    last_meter {READING} \
-    last_meter_ts {UNIX_TIMESTAMP}
+  ---
+  from: {ASSET_ID}
+  type: meter
+  timestamp: {ISO-8601}
+  ---
+  value: {READING}
+  unit: {hours|km|miles}
+  delta: {DELTA}
+  days_since: {DAYS}
   ```
+- **state.md updates:** Update `last_meter`, `last_meter_ts` with the new values.
 - **MEMORY.md updates:** Add meter reading to Recent Context section (date, value, type, delta). Update Learned Patterns if daily usage rate is shifting. Keep at most 3 readings in Recent Context.
 - **Messages to user:** Confirmation with delta and usage context. Example: "Logged 8542 hours. That's 87 hours over the last 6 days -- about 14.5 hrs/day."
 

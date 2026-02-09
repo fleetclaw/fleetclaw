@@ -1,12 +1,12 @@
 ---
 name: fuel-logger
-description: Accept fuel log entries from operators and publish to Redis
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+description: Accept fuel log entries from operators and record them
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Fuel Logger
 
-_Accept casual fuel input from operators, log it, and publish to Redis._
+_Accept casual fuel input from operators and record it._
 
 ## Trigger
 
@@ -15,9 +15,8 @@ _Accept casual fuel input from operators, log it, and publish to Redis._
 ## Input
 
 - **User messages:** Natural language fuel reports
-- **Redis keys:**
-  - `fleet:asset:{ASSET_ID}:fuel` -- last 5 entries for burn rate calculation
-  - `fleet:asset:{ASSET_ID}:state` -- `last_fuel_l`, `last_fuel_ts`, `last_meter` for context
+- **Outbox files:** Previous fuel entries in outbox/ (type: fuel) for burn rate calculation
+- **state.md:** `last_fuel_l`, `last_fuel_ts`, `last_meter` for context
 - **MEMORY.md:** Last fuel log details in Recent Context, operator fueling patterns in Operator Patterns, normal burn rate in Learned Patterns
 
 ## Behavior
@@ -42,7 +41,7 @@ When an operator reports fuel:
 
 5. If the burn rate is reasonable or this is early data, just confirm. Keep it short and conversational. Operators don't want a report -- they want to know the number landed.
 
-6. Write the fuel log to Redis and update the state HASH.
+6. Write a timestamped fuel entry to outbox/ and update state.md.
 
 7. Update MEMORY.md Recent Context with the new fuel log. Include date, liters, and burn rate if calculated. If there are more than 5 recent fuel entries in MEMORY.md, remove the oldest. If the burn rate is establishing a trend (consistently higher or lower than recorded normal), update Learned Patterns.
 
@@ -54,18 +53,19 @@ If an operator sends a number with no context and you're not sure if it's fuel, 
 
 ## Output
 
-- **Redis writes:**
+- **Outbox writes:** Write a timestamped fuel entry to outbox/:
   ```
-  XADD fleet:asset:{ASSET_ID}:fuel MAXLEN ~ 1000 * \
-    liters {AMOUNT} \
-    burn_rate {RATE} \
-    source "operator" \
-    note "{ANY_NOTES}"
-
-  HSET fleet:asset:{ASSET_ID}:state \
-    last_fuel_l {AMOUNT} \
-    last_fuel_ts {UNIX_TIMESTAMP}
+  ---
+  from: {ASSET_ID}
+  type: fuel
+  timestamp: {ISO-8601}
+  ---
+  liters: {AMOUNT}
+  burn_rate: {RATE}
+  source: operator
+  note: {ANY_NOTES}
   ```
+- **state.md updates:** Update `last_fuel_l`, `last_fuel_ts` with the new values.
 - **MEMORY.md updates:** Add fuel log to Recent Context section (date, liters, burn rate). Note burn rate trend in Learned Patterns if it's changing. Update Operator Patterns if this operator has a consistent fueling habit (e.g., always fuels at shift start).
 - **Messages to user:** Confirmation with burn rate context when available. Example: "Logged 400L. 620L burned over 47h since last fill -- 13.2 L/hr, right in your normal range."
 

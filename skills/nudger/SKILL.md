@@ -1,7 +1,7 @@
 ---
 name: nudger
 description: Gently remind operators about missing data by evaluating overdue conditions from all mounted skills
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Nudger
@@ -15,8 +15,7 @@ _One gentle consolidated reminder per heartbeat, at most. Read overdue condition
 ## Input
 
 - **MEMORY.md:** Current Shift section -- what's been logged this shift, what's been nudged this shift, when the operator's first message was, operator name
-- **Redis keys:**
-  - `fleet:asset:{ASSET_ID}:state` -- `last_fuel_ts`, `last_meter_ts`, `last_preop_ts`, `last_seen` for timestamp comparisons
+- **state.md:** `last_fuel_ts`, `last_meter_ts`, `last_preop_ts` for timestamp comparisons
 - **All mounted skills' `## Overdue Condition` sections** -- the agent reads these from the other skill files at evaluation time. The current Tier 1 conditions are:
   - **fuel-logger:** No fuel log within 8 hours of the operator's first message this shift
   - **meter-reader:** No meter reading within 7 days of the last recorded reading
@@ -26,7 +25,7 @@ _One gentle consolidated reminder per heartbeat, at most. Read overdue condition
 
 ### How it works
 
-On each heartbeat, the agent evaluates every Overdue Condition from every mounted skill. For each condition, it checks timestamps in Redis and shift tracking in MEMORY.md to determine whether that piece of data is missing. If something is overdue and the operator hasn't already been reminded this shift, include it in a nudge.
+On each heartbeat, the agent evaluates every Overdue Condition from every mounted skill. For each condition, it checks timestamps in state.md and shift tracking in MEMORY.md to determine whether that piece of data is missing. If something is overdue and the operator hasn't already been reminded this shift, include it in a nudge.
 
 This is the only skill that sends unprompted messages to operators. That makes it the most important skill to get right in terms of tone and restraint.
 
@@ -65,7 +64,7 @@ When combining multiple items into one message, keep it conversational:
 
 For each mounted skill's Overdue Condition, the agent checks:
 
-1. Is the condition actually met? Compare the relevant timestamp in Redis or MEMORY.md against the threshold. A fuel log from 2 hours ago means fuel is not overdue (threshold is 8 hours). A meter reading from 8 days ago means it is overdue (threshold is 7 days).
+1. Is the condition actually met? Compare the relevant timestamp in state.md or MEMORY.md against the threshold. A fuel log from 2 hours ago means fuel is not overdue (threshold is 8 hours). A meter reading from 8 days ago means it is overdue (threshold is 7 days).
 
 2. Has this item already been nudged this shift? Check MEMORY.md Current Shift "Nudged this shift" list. If yes, skip it.
 
@@ -81,4 +80,4 @@ When a Tier 2 skill adds an `## Overdue Condition` section, the nudger automatic
 
 - **Messages to user:** One consolidated gentle reminder covering all overdue items, or nothing if everything is current. DM only, never in group chats.
 - **MEMORY.md updates:** Record what was nudged in Current Shift "Nudged this shift" list so reminders are not repeated.
-- **No Redis writes.** The nudger reads Redis but does not write to it. It produces messages and MEMORY.md updates only.
+- **No outbox writes.** The nudger reads state.md and MEMORY.md but does not write outbox files. It produces messages and MEMORY.md updates only.

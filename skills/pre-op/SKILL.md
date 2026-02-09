@@ -1,7 +1,7 @@
 ---
 name: pre-op
-description: Walk operators through a conversational pre-operation inspection and log results to Redis
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+description: Walk operators through a conversational pre-operation inspection and log results
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Pre-Op Inspection
@@ -16,10 +16,9 @@ _Walk the operator through a pre-op check conversationally. Not a form. Not a ch
 ## Input
 
 - **User messages:** Operator's assessment of machine condition
-- **Redis keys:**
-  - `fleet:asset:{ASSET_ID}:preop` -- recent pre-op history (patterns, recurring flags)
-  - `fleet:asset:{ASSET_ID}:state` -- `last_preop`, `last_preop_ts` for quick reference
-  - `fleet:asset:{ASSET_ID}:inbox` -- pending maintenance acknowledgments to deliver before or during pre-op
+- **Outbox files:** Previous pre-op entries in outbox/ (type: preop) for patterns and recurring flags
+- **state.md:** `last_preop_ts`, `last_preop_status` for quick reference
+- **Inbox files:** Pending maintenance acknowledgments (type: maintenance_ack) to deliver before or during pre-op
 - **MEMORY.md:** Current Shift section (whether pre-op is done), Recent Context (last pre-ops and any flags), Open Items (outstanding issues that might show up again)
 
 ## Behavior
@@ -82,20 +81,23 @@ If the operator doesn't want to do a pre-op or ignores the prompt, don't block t
 
 If there are pending maintenance acknowledgments in the inbox (checked at session start), deliver them during or just before the pre-op. This is the natural moment to tell the operator about recent repairs: "Heads up -- hydraulic pump was replaced yesterday. Dave said to monitor temps for 24h." This closes the feedback loop and may influence their pre-op assessment.
 
+After delivering an inbox message, delete or archive the inbox file to prevent re-reading.
+
 ## Output
 
-- **Redis writes:**
+- **Outbox writes:** Write a timestamped pre-op entry to outbox/:
   ```
-  XADD fleet:asset:{ASSET_ID}:preop MAXLEN ~ 500 * \
-    result {pass|partial|fail} \
-    flags "{COMMA_SEPARATED_FLAGS}" \
-    operator "{OPERATOR_NAME}" \
-    severity {none|minor|major|safety}
-
-  HSET fleet:asset:{ASSET_ID}:state \
-    last_preop {pass|partial|fail} \
-    last_preop_ts {UNIX_TIMESTAMP}
+  ---
+  from: {ASSET_ID}
+  type: preop
+  timestamp: {ISO-8601}
+  ---
+  result: {pass|partial|fail}
+  flags: {comma-separated flags if any}
+  operator: {OPERATOR_NAME}
+  severity: {none|minor|major|safety}
   ```
+- **state.md updates:** Update `last_preop_ts`, `last_preop_status` with the new values.
 - **MEMORY.md updates:** Mark pre-op as done in Current Shift (with result and any flags). Add flags to Open Items if severity is major or safety. Update Recent Context with pre-op result.
 - **Messages to user:** Acknowledgment of the pre-op result. Brief if everything passed. More detailed if items were flagged, including what happens next (nudger or issue-reporter).
 

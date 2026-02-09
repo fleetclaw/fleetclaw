@@ -1,7 +1,7 @@
 ---
 name: memory-curator-asset
 description: Curate MEMORY.md for asset agents — keep it short, relevant, and useful for operator conversations
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Memory Curator (Asset Agent)
@@ -11,19 +11,18 @@ _Keep MEMORY.md lean and useful. Distill what happened into what matters. Prune 
 ## Trigger
 
 - **Session end** — After each operator conversation, distill what happened into MEMORY.md
-- **Heartbeat** — Every 30 minutes, refresh from Redis (maintenance acknowledgments, directive updates, inbox messages)
+- **Heartbeat** — Every 30 minutes, refresh from inbox (maintenance acknowledgments, directive updates)
 
 ## Input
 
 - **MEMORY.md:** Current contents (read before updating)
-- **Redis keys:**
-  - `fleet:asset:{ASSET_ID}:inbox` — pending messages (maintenance acks, directives)
-  - `fleet:asset:{ASSET_ID}:maintenance` — recent maintenance events (for context)
-  - `fleet:asset:{ASSET_ID}:state` — current state fields (for consistency check)
+- **Inbox files:** Pending messages in inbox/ (maintenance acks, directives)
+- **Outbox files:** Recent entries in outbox/ for cross-referencing (e.g., checking if maintenance was logged for an open issue)
+- **state.md:** Current state fields for consistency check
 
 ## Behavior
 
-MEMORY.md is the agent's hot cache — the stuff it needs instantly when an operator opens Telegram, without querying Redis. Everything in MEMORY.md should pass this test: "Would I need this in the first 10 seconds of a conversation?"
+MEMORY.md is the agent's hot cache — the stuff it needs instantly when an operator starts a conversation, without reading through outbox history. Everything in MEMORY.md should pass this test: "Would I need this in the first 10 seconds of a conversation?"
 
 ### Structure
 
@@ -68,20 +67,20 @@ When a conversation with an operator ends:
 5. Check character count. If approaching 5,000 characters, prune (see pruning rules below).
 
 Do not write conversation transcripts. Distill interactions into facts:
-- ❌ "Mike said '400l' and I confirmed the fuel log and asked about his burn rate and he said it seemed normal"
-- ✅ "Fuel: 400L logged Feb 8, burn rate 13.2 L/hr (normal)"
+- Bad: "Mike said '400l' and I confirmed the fuel log and asked about his burn rate and he said it seemed normal"
+- Good: "Fuel: 400L logged Feb 8, burn rate 13.2 L/hr (normal)"
 
 ### On heartbeat
 
 Every 30 minutes:
 
-1. Check `fleet:asset:{ASSET_ID}:inbox` for new messages. If there are maintenance acknowledgments or directives not yet in "Pending delivery," add them.
-2. Cross-check "Open Items" against `fleet:asset:{ASSET_ID}:maintenance` — if maintenance was logged for an open issue, move it to "Pending delivery" so the operator hears about it next session.
-3. If the `last_seen` field in the state HASH is more than 2 hours old and a different operator's name appears in an incoming message, treat it as a shift change (see Shift Detection below).
+1. Check inbox/ for new files. If there are maintenance acknowledgments or directives not yet in "Pending delivery," add them.
+2. Cross-check "Open Items" against recent outbox/ entries — if maintenance was logged for an open issue (visible via a maintenance_ack in inbox), note the resolution and move it to "Pending delivery" so the operator hears about it next session.
+3. If the messaging user ID changes after a gap of more than 2 hours since last activity, treat it as a shift change (see Shift Detection below).
 
 ### Shift detection
 
-A new shift begins when a different Telegram user sends a message after a gap of more than 2 hours since last activity.
+A new shift begins when a different messaging user sends a message after a gap of more than 2 hours since last activity.
 
 When a new shift is detected:
 
@@ -113,5 +112,5 @@ Never prune:
 ## Output
 
 - **MEMORY.md updates:** Restructured/pruned content following the sections above
-- **No Redis writes:** This skill only reads Redis; it doesn't write. Other skills handle Redis writes.
+- **No outbox writes:** This skill only reads; it doesn't write outbox files. Other skills handle outbox writes.
 - **No messages to user:** Memory curation is silent background work.

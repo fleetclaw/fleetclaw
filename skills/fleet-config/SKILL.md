@@ -23,7 +23,7 @@ _Track skill deployment across the fleet. Deploy, remove, or query which skills 
 
 ### Querying current deployment
 
-When leadership asks "what skills does EX-001 have?" or "what's deployed to the excavators?", answer from the Skill Deployment State in MEMORY.md. This section tracks what skills are mounted to each agent type and any per-asset exceptions.
+When leadership asks "what skills does EX-001 have?" or "what's deployed to the excavators?", answer from the Skill Deployment State in MEMORY.md. This section tracks what skills are mounted to each agent role (asset, clawvisor, clawordinator) and any per-asset exceptions.
 
 If the deployment state in MEMORY.md is empty or stale, note that. The authoritative source is the docker-compose.yml volume mounts, but Clawordinator tracks the desired state in memory.
 

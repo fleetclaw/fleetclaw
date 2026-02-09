@@ -125,7 +125,7 @@ A Tier 2 skill author building `tire-pressure-logger` just adds their own `## Ov
 
 ### Skill mounting
 
-No skills are shared across all agent types. Each agent type has its own skill set:
+No skills are shared across agent roles. Each role has its own skill set:
 
 ```
 skills/
@@ -227,7 +227,7 @@ MEMORY.md is the agent's hot cache — curated context loaded at session start w
 
 ### The 15,000 character constraint
 
-FleetClaw sets `bootstrapMaxChars` to 15,000 characters (down from OpenClaw's 20,000 default) to leave headroom for skills context. This means MEMORY.md must contain curated summaries, not raw data. Each agent type has a dedicated memory-curator skill that defines structure, pruning rules, and character budgets.
+FleetClaw sets `bootstrapMaxChars` to 15,000 characters (down from OpenClaw's 20,000 default) to leave headroom for skills context. This means MEMORY.md must contain curated summaries, not raw data. Each agent role has a dedicated memory-curator skill that defines structure, pruning rules, and character budgets.
 
 ### Per-agent-type design
 
@@ -282,7 +282,7 @@ Fallback: same operator active >14 hours = new shift period for nudge/pre-op pur
 
 ## Heartbeat intervals
 
-Each agent type has a different heartbeat cadence matching its operational rhythm:
+Each agent role has a different heartbeat cadence matching its operational rhythm:
 
 | Agent | Interval | Rationale |
 |-------|----------|-----------|

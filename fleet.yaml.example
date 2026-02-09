@@ -50,7 +50,7 @@ assets:
     serial: CAT16M3LMN22222
 
 # Heartbeat intervals (optional — defaults shown)
-# Controls how often each agent type runs proactive checks
+# Controls how often each agent role runs proactive checks
 heartbeats:
   asset: "30m"          # Nudges land mid-shift
   clawvisor: "2h"       # Oversight cadence

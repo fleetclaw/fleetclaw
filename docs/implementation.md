@@ -31,7 +31,7 @@ OpenClaw parses the frontmatter and stores custom metadata fields. The `requires
 
 ### Skill mounting in Docker
 
-Skills are mounted per agent type via docker-compose volumes:
+Skills are mounted per agent role via docker-compose volumes:
 
 ```yaml
 # Asset agent gets asset skills

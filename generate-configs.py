@@ -29,7 +29,7 @@ except ImportError:
 
 
 # ---------------------------------------------------------------------------
-# Skill mount mapping — which skills each agent type gets
+# Skill mount mapping — which skills each agent role gets
 # ---------------------------------------------------------------------------
 SKILL_MOUNTS = {
     "asset": [

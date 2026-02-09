@@ -225,7 +225,7 @@ Keep data flat (no nested JSON) for Tier 1 skills. Flat field-value pairs work c
 Skills that update MEMORY.md should follow these rules:
 
 1. **Write curated summaries, not raw data.** MEMORY.md has a 20,000 character bootstrap limit. Write "Last fuel: 400L on Feb 8, burn rate normal" — not a transcript of the conversation.
-2. **Respect the memory-curator skill's structure.** Each agent type has a memory-curator skill that defines MEMORY.md's sections and character budget. Your skill should write to the appropriate section, not create new top-level sections.
+2. **Respect the memory-curator skill's structure.** Each agent role has a memory-curator skill that defines MEMORY.md's sections and character budget. Your skill should write to the appropriate section, not create new top-level sections.
 3. **Prune as you write.** If adding a new fuel log, remove the oldest one from the recent context section. Don't let your skill's data grow unbounded.
 4. **Prefer Redis for history.** If someone needs the last 50 fuel logs, that's a Redis query. MEMORY.md holds the last 3-5 for instant context.
 
@@ -261,7 +261,7 @@ For FleetClaw:
 - **Clawvisor:** `fleet-status`, `compliance-tracker`, `maintenance-logger`, `anomaly-detector`, `shift-summary`, `escalation-handler`, `asset-query`, `memory-curator-clawvisor`
 - **Clawordinator:** `asset-onboarder`, `asset-lifecycle`, `fleet-director`, `escalation-resolver`, `fleet-analytics`, `fleet-config`, `memory-curator-clawordinator`
 
-No skills are shared across all agent types. Each agent type has its own skill set mounted in its workspace. Skill mounting is managed by Clawordinator via the `fleet-config` skill.
+No skills are shared across agent roles. Each role has its own skill set mounted in its workspace. Skill mounting is managed by Clawordinator via the `fleet-config` skill.
 
 ## Example: fuel-logger skill
 

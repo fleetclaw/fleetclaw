@@ -42,7 +42,7 @@ Data flows: Asset Agents → Redis → Clawvisor → (escalates to) → Clawordi
 
 ### Skills-First Design
 
-Skills are markdown files (`skills/{name}/SKILL.md`) that teach agents behavior in plain English. Each agent type has a fixed set of skill mounts defined in `SKILL_MOUNTS` in `generate-configs.py`. Skills follow a standard structure: YAML frontmatter + Trigger/Input/Behavior/Output/Overdue Condition sections. See `skills/SKILL-TEMPLATE.md` for the blank scaffolding and `docs/skill-authoring.md` for the philosophy guide.
+Skills are markdown files (`skills/{name}/SKILL.md`) that teach agents behavior in plain English. Each agent role has a fixed set of skill mounts defined in `SKILL_MOUNTS` in `generate-configs.py`. Skills follow a standard structure: YAML frontmatter + Trigger/Input/Behavior/Output/Overdue Condition sections. See `skills/SKILL-TEMPLATE.md` for the blank scaffolding and `docs/skill-authoring.md` for the philosophy guide.
 
 ### SOUL.md — Minimal Identity
 
@@ -76,7 +76,7 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 
 - `generate-configs.py` — reads fleet.yaml, produces all output (the only code)
 - `fleet.yaml.example` — example fleet configuration
-- `templates/` — SOUL.md and openclaw.json templates per agent type
+- `templates/` — SOUL.md and openclaw.json templates per agent role
 - `skills/` — 21 Tier 1 skills, each in `{name}/SKILL.md`
 - `docker/` — Dockerfile (standard) and Dockerfile.clawordinator (adds docker.io)
 - `docs/` — architecture.md, redis-schema.md, skill-authoring.md, implementation.md
@@ -94,7 +94,7 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 
 ## When Editing generate-configs.py
 
-- `SKILL_MOUNTS` dict controls which skills each agent type receives
+- `SKILL_MOUNTS` dict controls which skills each agent role receives
 - `CONSUMER_GROUPS` / `FLEET_CONSUMER_GROUPS` define Redis XGROUP setup
 - Template substitution is plain string replace — if you add a new placeholder, update both the template files and the `generate_*` functions
 - The compose output uses PyYAML `dump()` — dict key order matters for readability

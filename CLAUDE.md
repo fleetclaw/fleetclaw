@@ -59,6 +59,8 @@ This is the only code in the repo. It reads `fleet.yaml` and outputs everything 
 
 Template substitution uses simple string replacement (`{PLACEHOLDER}`), not Jinja2. OpenClaw's own env vars use `${ENV_VAR}` syntax and are resolved at runtime by OpenClaw, not by this script.
 
+Assets in `fleet.yaml` require only `id` and `serial`. The `type` field is deprecated (triggers a warning, silently ignored). Emoji is hardcoded to `"gear"` in the openclaw-asset.json template.
+
 ### Redis Schema
 
 Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (discrete fields, not JSON blobs). Events are STREAM (with MAXLEN trimming). Indexes are SET. The authoritative reference is `docs/redis-schema.md`.
@@ -91,6 +93,8 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 - Each skill declares which Redis keys it reads/writes in Input/Output sections
 - Overdue Condition format: `[what's missing] after [time threshold] since [reference event]`
 - Skills are mounted read-only into containers; changes require container restart
+- When removing numbered steps, renumber the remaining steps — don't leave gaps
+- Use "agent role" (not "agent type") when referring to asset/clawvisor/clawordinator to avoid confusion with equipment types
 
 ## When Editing generate-configs.py
 
@@ -98,3 +102,4 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 - `CONSUMER_GROUPS` / `FLEET_CONSUMER_GROUPS` define Redis XGROUP setup
 - Template substitution is plain string replace — if you add a new placeholder, update both the template files and the `generate_*` functions
 - The compose output uses PyYAML `dump()` — dict key order matters for readability
+- When removing a concept (e.g., a Redis key, a config field), grep the entire repo — skills, docs, CLAUDE.md, and templates all reference Redis keys and config patterns

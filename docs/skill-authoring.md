@@ -15,19 +15,19 @@ Every skill has two parts:
 ```yaml
 ---
 name: fuel-logger
-description: Accept fuel log entries from operators and publish to Redis
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+description: Accept fuel log entries from operators and record them
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 ```
 
-The `requires` block declares system dependencies. `bins` lists command-line tools the skill needs. `env` lists environment variables. OpenClaw checks these at startup and warns if anything is missing.
+The `requires` block declares system dependencies. `bins` lists command-line tools the skill needs. `env` lists environment variables. OpenClaw checks these at startup and warns if anything is missing. Most Tier 1 skills have no external bin or env requirements.
 
 **Markdown body** (LLM-readable) — teaches the agent the behavior:
 
 ```markdown
 # Fuel Logger
 
-_Accept casual fuel input from operators, log it, and publish to Redis._
+_Accept casual fuel input from operators and record it._
 
 ## Trigger
 ...
@@ -48,18 +48,19 @@ When does the agent activate this skill? Options:
 - **Message** — The operator/user says something that matches this skill's domain. The agent recognizes "400L" or "filled up" as fuel-related and activates the fuel-logger skill.
 - **Heartbeat** — The agent's periodic polling cycle fires. Used for proactive checks like anomaly detection or nudging.
 - **Session start** — The agent wakes up and reviews context. Used for delivering pending information like maintenance acknowledgments.
-- **Redis event** — New data appears in a key the agent watches. Used for responding to external changes (e.g., a directive from Clawordinator).
+- **Inbox message** — A new file appears in the agent's inbox directory. Used for responding to messages from other agents (directives, maintenance acks, escalation resolutions).
 
 Most skills use 1-2 triggers. A fuel-logger triggers on operator messages. A nudger triggers on heartbeat. A memory-curator triggers on both session end and heartbeat.
 
 ### Input
 
-What data does the skill consume? Be specific about Redis key patterns:
+What data does the skill consume? Be specific about filesystem paths:
 
 ```markdown
 ## Input
 - **User messages:** Natural language fuel reports (e.g., "400l", "filled up 400")
-- **Redis keys:** `fleet:asset:{ASSET_ID}:fuel` (recent fuel history for burn rate calculation)
+- **Outbox files:** Previous fuel entries in outbox/ (type: fuel) for burn rate calculation
+- **state.md:** last_fuel_l, last_fuel_ts, burn_rate
 - **MEMORY.md:** Last fuel log details, operator fueling patterns
 ```
 
@@ -77,11 +78,12 @@ The core of the skill. Plain English instructions the agent follows. This sectio
 When an operator reports fuel:
 
 1. Parse the amount from their message. Accept messy input — "400l", "filled 400",
-   "put in 400 liters" all mean 400L.
+   "put 400 in at smoko" all mean 400L.
 2. If the amount is ambiguous, ask once. If still unclear, log what you can and note
    the ambiguity.
-3. Check MEMORY.md for the last fuel log. Calculate burn rate if enough data exists.
-4. Write to Redis and update MEMORY.md.
+3. Check state.md and MEMORY.md for the last fuel log. Calculate burn rate if enough
+   data exists.
+4. Write a timestamped fuel entry to outbox/ and update state.md.
 5. Respond with confirmation and burn rate context if available.
 ```
 
@@ -114,38 +116,38 @@ Walk the operator through the pre-op checklist conversationally:
   each one individually.
 - If they flag something — dig into that specific item. Ask severity and
   whether the machine is safe to operate.
-- If they skip the pre-op entirely — don't block them. Note it as incomplete
-  and let the nudger handle reminders.
 ```
 
 Do not use pseudocode or programming constructs. Write instructions the way you'd explain a task to a competent colleague.
 
 ### Output
 
-What does the skill produce? Be specific about Redis key patterns and data formats:
+What does the skill produce? Be specific about file formats:
 
 ```markdown
 ## Output
 
-- **Redis writes:**
+- **Outbox writes:** Write a timestamped fuel entry to outbox/:
   ```
-  XADD fleet:asset:{ASSET_ID}:fuel MAXLEN ~ 1000 * \
-    liters {AMOUNT} \
-    burn_rate {RATE} \
-    source "operator" \
-    note "{ANY_NOTES}"
-
-  HSET fleet:asset:{ASSET_ID}:state \
-    last_fuel_l {AMOUNT} \
-    last_fuel_ts {TIMESTAMP}
+  ---
+  from: {ASSET_ID}
+  type: fuel
+  timestamp: {ISO-8601}
+  ---
+  liters: {AMOUNT}
+  meter_at_fill: {METER}
+  burn_rate: {RATE}
+  status: {normal|high|low}
   ```
-- **MEMORY.md updates:** Update the "Recent Context" section with the new
-  fuel log. If burn rate is trending, note the trend.
-- **Messages to user:** Confirm the log with context.
-  Example: "Logged 400L. You've burned 620L over 47h since last fill — 13.2L/hr, normal range."
+- **state.md updates:** Update last_fuel_l, last_fuel_ts, burn_rate
+- **MEMORY.md updates:** Add fuel log to Recent Context section. Note burn
+  rate trend if it's changing.
+- **Messages to user:** Confirmation with burn rate context.
+  Example: "Logged 400L. 620L burned over 47h since last fill — 13.2 L/hr,
+  right in your normal range."
 ```
 
-The Redis commands in Output serve as documentation — they show the exact key patterns and field names this skill writes. Tier 2 authors can read this to understand the data contract.
+The file format in Output serves as documentation — it shows the exact frontmatter fields and body structure this skill writes. Tier 2 authors can read this to understand the data contract.
 
 ### Overdue Condition (optional)
 
@@ -171,69 +173,65 @@ The nudger is a standalone skill that coordinates reminders across all other ski
 
 This means a Tier 2 skill author building `tire-pressure-logger` just adds an `## Overdue Condition` section to their skill, and the nudger automatically picks it up. No coupling, no updates needed. The convention is the API.
 
-## Redis key conventions
+## Filesystem conventions
 
-Skills that read or write Redis must follow the FleetClaw key schema. See `docs/redis-schema.md` for the full reference.
+Skills that read or write data must follow the FleetClaw communication protocol. See `docs/communication.md` for the full reference.
 
-Summary of patterns:
+### Message format
 
-| Pattern | Type | Purpose |
-|---------|------|---------|
-| `fleet:asset:{ASSET_ID}:state` | HASH | Current machine state (discrete fields) |
-| `fleet:asset:{ASSET_ID}:fuel` | STREAM | Fuel log events |
-| `fleet:asset:{ASSET_ID}:meter` | STREAM | Meter reading events |
-| `fleet:asset:{ASSET_ID}:preop` | STREAM | Pre-op inspection events |
-| `fleet:asset:{ASSET_ID}:issues` | STREAM | Issue report events |
-| `fleet:asset:{ASSET_ID}:maintenance` | STREAM | Maintenance events (from Clawvisor) |
-| `fleet:asset:{ASSET_ID}:alerts` | STREAM | Anomaly alerts (from Clawvisor) |
-| `fleet:asset:{ASSET_ID}:inbox` | STREAM | Messages TO this asset agent |
-| `fleet:asset:{ASSET_ID}:lifecycle` | HASH | Active/idle/decommissioned |
-| `fleet:directives` | STREAM | Fleet-wide directives (from Clawordinator) |
-| `fleet:escalations` | STREAM | Escalation events |
-| `fleet:index:active` | SET | Active asset IDs |
-| `fleet:index:idle` | SET | Idle asset IDs |
+Every outbox and inbox file uses YAML frontmatter + markdown body:
 
-**Key rules:**
-- Keys are hierarchical, entity-first: `fleet:asset:{ASSET_ID}:{data_type}`
-- State data uses HASH with discrete fields (not JSON blobs)
-- Event data uses STREAM with MAXLEN trimming (not TTL expiry)
-- Cross-asset lookups use index SETs, not SCAN
-
-**State HASH fields are flat key-value pairs:**
-
-```bash
-HSET fleet:asset:EX-001:state \
-  status "active" \
-  operator "Mike" \
-  last_fuel_l "400" \
-  last_fuel_ts "1707350400"
+```markdown
+---
+from: {agent-id}
+type: {message-type}
+timestamp: {ISO-8601}
+---
+{body content — key-value pairs or prose}
 ```
 
-**Stream entries are flat field-value pairs:**
+### Filename convention
 
-```bash
-XADD fleet:asset:EX-001:fuel MAXLEN ~ 1000 * \
-  liters 400 \
-  burn_rate 13.2 \
-  source "operator"
+```
+{ISO-timestamp}_{type}.md
 ```
 
-Keep data flat (no nested JSON) for Tier 1 skills. Flat field-value pairs work cleanly with `redis-cli` and are easy to describe in skill instructions.
+Colons replaced with hyphens: `2026-02-09T06-12-00_fuel.md`
+
+### Key paths
+
+| Path | Purpose |
+|------|---------|
+| `outbox/` | Agent writes its own data here |
+| `inbox/` | Other agents write messages here |
+| `state.md` | Agent's current operational state (flat key-value) |
+| `fleet.md` | Fleet composition registry (read-only for most agents) |
+| `MEMORY.md` | Agent's curated working memory |
+
+### Cross-agent access
+
+- **Clawvisor reads** asset agents' `outbox/` directories and `state.md` files
+- **Clawvisor writes** to asset agents' `inbox/` directories (maintenance acks, alerts)
+- **Clawvisor writes** to Clawordinator's `inbox/` (escalations)
+- **Clawordinator writes** to any agent's `inbox/` (directives)
+- **Clawordinator writes** `fleet.md` (sole writer)
+
+ACLs enforce these access patterns. See `docs/permissions.md`.
 
 ## MEMORY.md conventions
 
 Skills that update MEMORY.md should follow these rules:
 
-1. **Write curated summaries, not raw data.** MEMORY.md has a 20,000 character bootstrap limit. Write "Last fuel: 400L on Feb 8, burn rate normal" — not a transcript of the conversation.
+1. **Write curated summaries, not raw data.** MEMORY.md has a 15,000 character bootstrap limit. Write "Last fuel: 400L on Feb 8, burn rate normal" — not a transcript of the conversation.
 2. **Respect the memory-curator skill's structure.** Each agent role has a memory-curator skill that defines MEMORY.md's sections and character budget. Your skill should write to the appropriate section, not create new top-level sections.
 3. **Prune as you write.** If adding a new fuel log, remove the oldest one from the recent context section. Don't let your skill's data grow unbounded.
-4. **Prefer Redis for history.** If someone needs the last 50 fuel logs, that's a Redis query. MEMORY.md holds the last 3-5 for instant context.
+4. **Prefer outbox files for history.** If someone needs the last 50 fuel logs, that's an outbox directory read. MEMORY.md holds the last 3-5 for instant context.
 
 ## Skill tiers
 
 FleetClaw skills exist in three tiers:
 
-**Tier 1 — Ships with FleetClaw.** Works out of the box. Uses Redis and MEMORY.md only. No external integrations. These skills define the baseline platform experience.
+**Tier 1 — Ships with FleetClaw.** Works out of the box. Uses filesystem communication and MEMORY.md only. No external integrations. These skills define the baseline platform experience.
 
 **Tier 2 — Organization-built.** Integrates with external systems via .env credentials (CMMS, telematics, fuel management). FleetClaw provides the skill template and this guide. The organization fills in the integration logic.
 
@@ -243,25 +241,9 @@ When building a Tier 2 or 3 skill:
 
 - Follow the template structure exactly — Trigger, Input, Behavior, Output, Overdue Condition
 - Declare all external dependencies in frontmatter (`bins` and `env`)
-- Document your Redis key patterns in Input/Output so other skills can discover your data
+- Document your outbox file types in Output so other skills can discover your data
 - If your skill produces data on a regular cadence, add an Overdue Condition
-- Reference `docs/redis-schema.md` for existing key patterns before creating new ones
-
-## Skill locations
-
-Skills are mounted at two levels:
-
-```
-~/.openclaw/skills/          # Shared skills (all agents on this host)
-<workspace>/skills/          # Per-agent skills
-```
-
-For FleetClaw:
-- **Asset agents:** `fuel-logger`, `meter-reader`, `pre-op`, `issue-reporter`, `nudger`, `memory-curator-asset`
-- **Clawvisor:** `fleet-status`, `compliance-tracker`, `maintenance-logger`, `anomaly-detector`, `shift-summary`, `escalation-handler`, `asset-query`, `memory-curator-clawvisor`
-- **Clawordinator:** `asset-onboarder`, `asset-lifecycle`, `fleet-director`, `escalation-resolver`, `fleet-analytics`, `fleet-config`, `memory-curator-clawordinator`
-
-No skills are shared across agent roles. Each role has its own skill set mounted in its workspace. Skill mounting is managed by Clawordinator via the `fleet-config` skill.
+- Reference `docs/communication.md` for the message format specification
 
 ## Example: fuel-logger skill
 
@@ -270,13 +252,13 @@ This is a complete Tier 1 skill showing all conventions:
 ```markdown
 ---
 name: fuel-logger
-description: Accept fuel log entries from operators and publish to Redis
-metadata: {"openclaw":{"requires":{"bins":["redis-cli"],"env":["REDIS_URL"]}}}
+description: Accept fuel log entries from operators and record them
+metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 ---
 
 # Fuel Logger
 
-_Accept casual fuel input from operators, log it, and publish to Redis._
+_Accept casual fuel input from operators and record it._
 
 ## Trigger
 
@@ -286,7 +268,8 @@ _Accept casual fuel input from operators, log it, and publish to Redis._
 ## Input
 
 - **User messages:** Natural language fuel reports
-- **Redis keys:** `fleet:asset:{ASSET_ID}:fuel` (last 5 entries for burn rate)
+- **Outbox files:** Previous fuel entries in outbox/ (type: fuel) for burn rate
+- **state.md:** last_fuel_l, last_fuel_ts, burn_rate
 - **MEMORY.md:** Last fuel log, operator fueling patterns
 
 ## Behavior
@@ -302,17 +285,16 @@ When an operator reports fuel:
 2. If the amount is unclear after one follow-up, log what you can with a
    note that the amount is estimated or unknown.
 
-3. Check MEMORY.md for the previous fuel log. If available, calculate:
+3. Check state.md and MEMORY.md for the previous fuel log. If available,
+   calculate:
    - Liters consumed since last fill
    - Hours operated since last fill (from meter readings if available)
    - Burn rate (L/hr)
 
 4. Compare burn rate to this asset's recent average (from MEMORY.md patterns).
    If >20% above average, mention it casually — don't alarm, just inform.
-   "That's a bit higher than usual — 15.1 L/hr vs your typical 12.8. Might
-   be worth a look if it stays up."
 
-5. Write the fuel log to Redis and update the state HASH.
+5. Write the fuel entry to outbox/ and update state.md.
 
 6. Update MEMORY.md with the new fuel log. If there are more than 5 recent
    fuel entries in MEMORY.md, remove the oldest.
@@ -321,18 +303,18 @@ When an operator reports fuel:
 
 ## Output
 
-- **Redis writes:**
-  ```
-  XADD fleet:asset:{ASSET_ID}:fuel MAXLEN ~ 1000 * \
-    liters {AMOUNT} \
-    burn_rate {RATE} \
-    source "operator" \
-    note "{ANY_NOTES}"
+- **Outbox writes:**
+  ---
+  from: {ASSET_ID}
+  type: fuel
+  timestamp: {ISO-8601}
+  ---
+  liters: {AMOUNT}
+  meter_at_fill: {METER}
+  burn_rate: {RATE}
+  status: {normal|high|low}
 
-  HSET fleet:asset:{ASSET_ID}:state \
-    last_fuel_l {AMOUNT} \
-    last_fuel_ts {UNIX_TIMESTAMP}
-  ```
+- **state.md updates:** Update last_fuel_l, last_fuel_ts, burn_rate
 - **MEMORY.md updates:** Add fuel log to Recent Context section. Note burn
   rate trend if it's changing.
 - **Messages to user:** Confirmation with burn rate context.
@@ -349,8 +331,7 @@ No fuel log within 8 hours of the operator's first message this shift.
 Things to avoid when writing skills:
 
 - **Don't write code in Behavior.** Skills are instructions, not programs. "Parse the amount from their message" — not `const amount = parseInt(message.match(/\d+/))`.
-- **Don't duplicate other skills.** If your skill needs data from another skill, read it from Redis or MEMORY.md. Don't re-implement fuel logging inside your anomaly detector.
+- **Don't duplicate other skills.** If your skill needs data from another skill, read it from the relevant outbox files or MEMORY.md. Don't re-implement fuel logging inside your anomaly detector.
 - **Don't hardcode asset-specific details.** Skills are generic. The agent gets its identity from SOUL.md and its history from MEMORY.md. A fuel-logger skill works for excavators and haul trucks without knowing which one it's mounted to.
 - **Don't create new MEMORY.md sections without coordinating with the memory-curator.** The memory-curator skill defines the structure. Your skill writes to existing sections.
-- **Don't use nested JSON in Redis.** Keep Stream entries and HASH fields flat. Nested structures are hard to describe in skill instructions and messy to handle with `redis-cli`.
-- **Don't rely on SCAN for hot paths.** Use index SETs (`fleet:index:active`, `fleet:index:idle`) for cross-asset lookups. SCAN is for admin/debug only.
+- **Don't assume infinite outbox growth.** Outbox files may be archived or deleted after a retention period. For recent data (last shift, last few days), outbox files are reliable. For long-term history, use MEMORY.md summaries.

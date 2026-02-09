@@ -43,7 +43,7 @@ Once validated, perform the following registrations:
 
 ### Start the agent container
 
-The container name follows the convention `fc-agent-{ID}` with the ID lowercased. Start the container with `docker start fc-agent-{id}`.
+The container name follows the convention `fc-agent-{id}` (ID lowercased). Start the container with `docker start fc-agent-{id}`.
 
 This requires the service to already exist (created by `docker compose up`). If it does not, remind the user that `generate-configs.py` needs to be re-run to add the service definition, then `docker compose -f output/docker-compose.yml --project-directory . up -d` from the host to create it.
 

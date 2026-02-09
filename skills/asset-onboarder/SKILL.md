@@ -43,9 +43,9 @@ Once validated, perform the following registrations:
 
 ### Start the agent container
 
-The container name follows the convention `fc-agent-{ID}` with the ID lowercased. Run `docker compose up -d fc-agent-{id}` to create and start the container.
+The container name follows the convention `fc-agent-{ID}` with the ID lowercased. Start the container with `docker start fc-agent-{id}`.
 
-This requires the service to already be defined in docker-compose.yml. If it is not (runtime addition), remind the user that `generate-configs.py` needs to be re-run to add the service definition, or they can manually add the service block.
+This requires the service to already exist (created by `docker compose up`). If it does not, remind the user that `generate-configs.py` needs to be re-run to add the service definition, then `docker compose -f output/docker-compose.yml --project-directory . up -d` from the host to create it.
 
 ### Telegram bot token reminder
 
@@ -69,6 +69,6 @@ Respond with the full details of what was created: asset ID, serial, that it was
   HSET fleet:asset:{ID}:state \
     status "active"
   ```
-- **Docker:** `docker compose up -d fc-agent-{id}`
+- **Docker:** `docker start fc-agent-{id}`
 - **MEMORY.md updates:** Add to Recent Actions (date, asset ID, serial). Update Fleet Composition counts.
 - **Messages to user:** Confirmation with asset details, container status, and Telegram token reminder.

@@ -23,7 +23,7 @@ cp fleet.yaml.example fleet.yaml        # edit with your assets
 python generate-configs.py
 cp output/.env.template .env            # fill in tokens
 bash output/setup-redis.sh              # one-time Redis consumer groups
-docker compose -f output/docker-compose.yml up -d
+docker compose -f output/docker-compose.yml --project-directory . up -d
 ```
 
 There are no tests, linting, or build steps. The only executable code is `generate-configs.py`.
@@ -68,7 +68,7 @@ Entity-first hierarchical keys: `fleet:asset:{ASSET_ID}:{type}`. State is HASH (
 ### Key Config Values
 
 - OpenClaw default gateway port: 18789 (set in openclaw.json templates, matched by healthchecks in generate-configs.py)
-- OpenClaw base image: `ghcr.io/openclaw/openclaw:2026.2.x`
+- OpenClaw base image: `ghcr.io/openclaw/openclaw:v2026.2.6`
 - MEMORY.md bootstrap limit: 15,000 chars (`bootstrapMaxChars` in openclaw.json templates)
 - Heartbeat defaults: asset 30m, clawvisor 2h, clawordinator 4h
 - Container memory: asset 512m, clawvisor/clawordinator 1g, redis 768m

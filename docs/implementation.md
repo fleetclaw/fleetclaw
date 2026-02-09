@@ -202,7 +202,7 @@ bash output/setup-redis.sh
 # Creates consumer groups for all asset streams
 
 # 5. Launch
-docker compose -f output/docker-compose.yml up -d
+docker compose -f output/docker-compose.yml --project-directory . up -d
 # Fleet is live. Agents create MEMORY.md on first operator interaction.
 ```
 

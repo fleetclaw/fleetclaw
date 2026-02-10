@@ -7,7 +7,6 @@ data/
 
 # Environment files (contain secrets)
 *.env
-.env
 
 # OS artifacts
 .DS_Store

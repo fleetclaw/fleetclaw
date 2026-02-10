@@ -1,4 +1,4 @@
-# Legacy generated output (from deleted generate-configs.py)
+# Generated output and local data
 output/
 data/
 
@@ -7,7 +7,6 @@ data/
 
 # Environment files (contain secrets)
 *.env
-.env
 
 # OS artifacts
 .DS_Store

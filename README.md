@@ -20,7 +20,7 @@
 
 
   <p align="center">
-    AI-powered fleet management that gives every piece of equipment its own dedicated digital assistant.
+    A skill library and architecture reference that gives every piece of mining equipment its own AI agent. Built on <a href="https://github.com/openclaw/openclaw">OpenClaw</a>.
     <br />
     <a href="https://github.com/fleetclaw/fleetclaw/issues/new?labels=bug">Report Bug</a>
     ·
@@ -29,24 +29,15 @@
 
 </div>
 
-<!-- TABLE OF CONTENTS -->
-
 ---
 
 ## About The Project
 
-FleetClaw is a platform that gives every piece of mining equipment its own AI agent. Operators text their machine via Telegram to log fuel, record meter readings, complete pre-op inspections, and report issues. The system makes compliance feel like a conversation rather than a form.
+FleetClaw gives every piece of mining equipment its own AI agent. Operators text their machine to log fuel, record meter readings, complete pre-op inspections, and report issues. The system makes compliance feel like a conversation rather than a form.
 
-Built on [OpenClaw](https://github.com/openclaw/openclaw), each agent runs in its own Docker container with its own identity, memory, and skills. Agents communicate through Redis and persist context through curated markdown files.
+FleetClaw is a **platform, not a product**. The core system provides agent identities, communication patterns, and behavior definitions. What agents actually do is defined entirely by **skills** -- swappable markdown instructions that organizations can customize, extend, or replace.
 
-FleetClaw is a **platform, not a product**. The core system provides agents, communication, and infrastructure. What those agents actually do is defined by **skills** -- swappable markdown instructions that organizations can customize, extend, or replace.
-
-### Built With
-
-* ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
-* ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
-* ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
-* ![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=flat&logo=telegram&logoColor=white)
+This repository contains no executable code. It is a **skill library and architecture reference** designed to be deployed by a coding agent (Claude Code, Codex, etc.) or a human operator following the documentation.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -60,22 +51,23 @@ FleetClaw runs three types of agents:
 |-------|----------|------|
 | **Asset Agents** | Operators | One per machine. Accepts casual input, logs data, provides feedback, nudges. |
 | **Clawvisor** | Mechanics, foremen, supervisors, safety reps | Fleet oversight. Aggregates data, tracks compliance, detects anomalies, accepts maintenance logs. |
-| **Clawordinator** | Managers, safety reps, owners | Command layer. Fleet composition, directives, escalation resolution, infrastructure control. |
+| **Clawordinator** | Managers, safety reps, owners | Command layer. Fleet composition, directives, escalation resolution, service management. |
 
 ```
 Operator texts EX-001: "400l"
-  --> Asset agent logs fuel, calculates burn rate, responds: "13.2 L/hr, normal range."
-  --> Redis stream event
+  --> Asset agent logs fuel to outbox/, calculates burn rate, responds: "13.2 L/hr, normal range."
 
-Clawvisor reads Redis on heartbeat
+Clawvisor reads asset outbox files on heartbeat
   --> Tracks compliance, detects anomalies, routes alerts
 
 Mechanic texts Clawvisor: "replaced hyd pump on EX-001, 6 hours"
-  --> Logs maintenance, sends acknowledgment to EX-001's inbox
+  --> Logs maintenance to outbox/, writes acknowledgment to EX-001's inbox/
 
 Next operator session with EX-001:
   --> "Heads up -- hydraulic pump was replaced yesterday. Monitor temps."
 ```
+
+Agents communicate through **filesystem inbox/outbox directories** containing timestamped markdown files. Each agent runs as its own system user with POSIX ACL-based permissions. See [`docs/communication.md`](docs/communication.md) for the protocol.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -83,7 +75,7 @@ Next operator session with EX-001:
 
 ## Skills-First Architecture
 
-Agents learn behavior from **skills** -- markdown files containing plain English instructions, not code. Each agent role (asset, clawvisor, clawordinator) has its own skill set:
+Agents learn behavior from **skills** -- markdown files containing plain English instructions, not code. Each agent role has its own skill set:
 
 **Asset Agent:** `fuel-logger` `meter-reader` `pre-op` `issue-reporter` `nudger` `memory-curator`
 
@@ -91,43 +83,24 @@ Agents learn behavior from **skills** -- markdown files containing plain English
 
 **Clawordinator:** `asset-onboarder` `asset-lifecycle` `fleet-director` `escalation-resolver` `fleet-analytics` `fleet-config` `memory-curator`
 
-Organizations extend the platform by writing new skills. A Tier 2 skill like `tire-pressure-logger` just needs a `SKILL.md` following the template -- mount it, and the agent picks it up. See [`docs/skill-authoring.md`](docs/skill-authoring.md) for the guide.
+Organizations extend the platform by writing new skills. A Tier 2 skill like `tire-pressure-logger` just needs a `SKILL.md` following the template -- deploy it to the agent's skills directory, and the agent picks it up. See [`docs/skill-authoring.md`](docs/skill-authoring.md) for the guide.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
 
-## Quick Start
+## Getting Started
 
-### Prerequisites
+Point your coding agent (Claude Code, Codex, etc.) at [`AGENTS.md`](AGENTS.md) and provide your fleet's asset list. The coding agent will:
 
-- Linux server with Docker and Docker Compose
-- One Telegram bot token per agent (create via [@BotFather](https://t.me/botfather))
-- [Fireworks](https://fireworks.ai) API key (or other LLM provider)
+1. Create system users for each agent
+2. Install and configure OpenClaw per agent
+3. Inject FleetClaw skills and identity documents
+4. Set filesystem permissions
+5. Start agent services
+6. Initialize `fleet.md` with your fleet composition
 
-### Setup
-
-```bash
-# 1. Configure your fleet
-cp fleet.yaml.example fleet.yaml
-# Edit fleet.yaml -- add your assets, contacts, timezone
-
-# 2. Generate configs
-python generate-configs.py
-# Creates output/ with workspaces, configs, compose, env template, redis setup
-
-# 3. Fill in credentials
-cp output/.env.template .env
-# Edit .env -- add Telegram bot tokens, API keys
-
-# 4. Initialize Redis
-bash output/setup-redis.sh
-
-# 5. Launch
-docker compose -f output/docker-compose.yml --project-directory . up -d
-```
-
-Each agent creates its own `MEMORY.md` on the first operator interaction. No manual initialization needed.
+For manual setup, see [`docs/implementation.md`](docs/implementation.md) and the platform-specific guide in [`platform/`](platform/).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -137,20 +110,22 @@ Each agent creates its own `MEMORY.md` on the first operator interaction. No man
 
 ```
 fleetclaw/
-├── generate-configs.py          # Reads fleet.yaml, produces all output
-├── fleet.yaml.example           # Example fleet configuration
+├── AGENTS.md                       # Coding agent entry point
+├── CLAUDE.md                       # Claude Code guidance
 ├── docs/
-│   ├── architecture.md          # System design and agent roles
-│   ├── redis-schema.md          # Authoritative Redis key reference
-│   ├── skill-authoring.md       # Skill writing guide and philosophy
-│   └── implementation.md        # How design maps to OpenClaw/Docker/Redis
+│   ├── architecture.md             # System design and agent roles
+│   ├── communication.md            # Filesystem message protocol
+│   ├── permissions.md              # POSIX ACL permission model
+│   ├── implementation.md           # Setup and deployment guide
+│   ├── skill-authoring.md          # Skill writing guide and philosophy
+│   └── customization.md            # Extending FleetClaw for your org
 ├── skills/
-│   ├── SKILL-TEMPLATE.md        # Blank scaffolding for new skills
-│   ├── fuel-logger/SKILL.md     # 21 Tier 1 skills, one per directory
+│   ├── SKILL-TEMPLATE.md           # Blank scaffolding for new skills
+│   ├── fuel-logger/SKILL.md        # 21 Tier 1 skills, one per directory
 │   ├── meter-reader/SKILL.md
 │   └── ...
-├── templates/                   # SOUL.md and openclaw.json templates
-└── docker/                      # Dockerfiles (standard + clawordinator)
+├── templates/                      # SOUL.md templates per agent role
+└── platform/                       # OS-specific references (Ubuntu, macOS, Windows)
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -161,10 +136,16 @@ fleetclaw/
 
 | Document | Description |
 |----------|-------------|
-| [`docs/architecture.md`](docs/architecture.md) | System design -- agents, data flow, Redis schema, deployment model |
-| [`docs/redis-schema.md`](docs/redis-schema.md) | Every Redis key pattern with field definitions and retention rules |
+| [`AGENTS.md`](AGENTS.md) | Entry point for coding agents -- setup flow and architecture overview |
+| [`docs/architecture.md`](docs/architecture.md) | System design -- agents, data flow, communication, permissions |
+| [`docs/communication.md`](docs/communication.md) | Filesystem message protocol -- inbox/outbox format, state.md, fleet.md |
+| [`docs/permissions.md`](docs/permissions.md) | POSIX ACL permission model for multi-agent filesystem access |
+| [`docs/implementation.md`](docs/implementation.md) | How to set up agents -- OpenClaw install, FleetClaw injection, services |
 | [`docs/skill-authoring.md`](docs/skill-authoring.md) | How to write skills -- philosophy, conventions, complete examples |
-| [`docs/implementation.md`](docs/implementation.md) | How the design maps to OpenClaw config, Docker volumes, Redis commands |
+| [`docs/customization.md`](docs/customization.md) | Extending FleetClaw -- custom skills, messaging channels, multi-site |
+| [`platform/ubuntu.md`](platform/ubuntu.md) | Ubuntu 24.04 platform reference |
+| [`platform/macos.md`](platform/macos.md) | macOS platform reference |
+| [`platform/windows.md`](platform/windows.md) | Windows platform reference |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

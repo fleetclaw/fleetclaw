@@ -1,19 +1,20 @@
-# Generated output (recreate with: python generate-configs.py)
+# Legacy generated output (from deleted generate-configs.py)
 output/
-
-# Runtime data
 data/
-
-# Environment (contains secrets)
-.env
-
-# Python
-__pycache__/
-*.pyc
-
-# Redis
-dump.rdb
-appendonly.aof
 
 # Claude Code local settings
 .claude/
+
+# Environment files (contain secrets)
+*.env
+.env
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor artifacts
+*.swp
+*~
+.vscode/
+.idea/

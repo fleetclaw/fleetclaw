@@ -31,6 +31,9 @@ Repeat for each agent: `fc-clawvisor`, `fc-clawordinator`, and each asset agent.
 
 ```bash
 su -s /bin/bash fc-ex001 -c "command here"
+
+# For CLI commands that need env vars (e.g., openclaw pairing, channels):
+sudo su -s /bin/bash fc-ex001 -c "source /opt/fleetclaw/env/ex001.env && openclaw <command>"
 ```
 
 ## Package management
@@ -67,26 +70,27 @@ Type=simple
 User=fc-{id}
 Group=fc-agents
 WorkingDirectory=/home/fc-{id}/.openclaw
-ExecStart=/usr/bin/node /home/fc-{id}/.openclaw/dist/index.js gateway
+ExecStart=/usr/bin/openclaw gateway --force
 Restart=on-failure
 RestartSec=10
 EnvironmentFile=/opt/fleetclaw/env/{id}.env
 
-# Resource limits
-MemoryMax=512M
+# Resource limits — use 1536M for Clawvisor/Clawordinator
+MemoryMax=1G
 CPUQuota=25%
 
 # Security hardening
 NoNewPrivileges=yes
 ProtectSystem=strict
-ReadWritePaths=/home/fc-{id}/.openclaw
+PrivateTmp=no
+ReadWritePaths=/home/fc-{id}/.openclaw /tmp
 ReadOnlyPaths=/opt/fleetclaw/skills /opt/fleetclaw/fleet.md
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-For Clawvisor and Clawordinator, adjust `MemoryMax` to `1G` and add appropriate `ReadWritePaths` for inbox access to other agents (see `docs/permissions.md`).
+For Clawvisor and Clawordinator, set `MemoryMax=1536M` and add appropriate `ReadWritePaths` for inbox access to other agents (see `docs/permissions.md`).
 
 ### Service commands
 
@@ -193,6 +197,7 @@ cat > /opt/fleetclaw/env/ex001.env << 'EOF'
 FIREWORKS_API_KEY=your-key-here
 TELEGRAM_BOT_TOKEN=your-token-here
 FLEET_MD_PATH=/opt/fleetclaw/fleet.md
+NODE_OPTIONS=--max-old-space-size=768
 EOF
 
 chown fc-ex001:root /opt/fleetclaw/env/ex001.env

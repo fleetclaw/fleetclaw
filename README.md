@@ -51,7 +51,7 @@ FleetClaw runs three types of agents:
 |-------|----------|------|
 | **Asset Agents** | Operators | One per machine. Accepts casual input, logs data, provides feedback, nudges. |
 | **Clawvisor** | Mechanics, foremen, supervisors, safety reps | Fleet oversight. Aggregates data, tracks compliance, detects anomalies, accepts maintenance logs. |
-| **Clawordinator** | Managers, safety reps, owners | Command layer. Fleet composition, directives, escalation resolution, service management. |
+| **Clawordinator** | Managers, owners | Command layer. Fleet composition, directives, escalation resolution, service management. |
 
 ```
 Operator texts EX-001: "400l"

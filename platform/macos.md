@@ -72,9 +72,9 @@ Create one plist per agent at `/Library/LaunchDaemons/com.fleetclaw.agent.{id}.p
 
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/local/bin/node</string>
-        <string>/Users/fc-ex001/.openclaw/dist/index.js</string>
+        <string>/usr/local/bin/openclaw</string>
         <string>gateway</string>
+        <string>--force</string>
     </array>
 
     <key>WorkingDirectory</key>
@@ -88,6 +88,8 @@ Create one plist per agent at `/Library/LaunchDaemons/com.fleetclaw.agent.{id}.p
         <string>your-token-here</string>
         <key>FLEET_MD_PATH</key>
         <string>/opt/fleetclaw/fleet.md</string>
+        <key>NODE_OPTIONS</key>
+        <string>--max-old-space-size=768</string>
     </dict>
 
     <key>RunAtLoad</key>
@@ -105,10 +107,11 @@ Create one plist per agent at `/Library/LaunchDaemons/com.fleetclaw.agent.{id}.p
     <key>StandardErrorPath</key>
     <string>/var/log/fleetclaw/fc-agent-ex001.err</string>
 
+    <!-- 1 GB for asset agents; use 1610612736 (1.5 GB) for Clawvisor/Clawordinator -->
     <key>SoftResourceLimits</key>
     <dict>
         <key>MemoryLock</key>
-        <integer>536870912</integer>
+        <integer>1073741824</integer>
     </dict>
 </dict>
 </plist>

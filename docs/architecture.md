@@ -216,7 +216,7 @@ MEMORY.md is the agent's hot cache — curated context loaded at session start. 
 
 ### The 15,000 character constraint
 
-FleetClaw sets `bootstrapMaxChars` to 15,000 characters (down from OpenClaw's 20,000 default) to leave headroom for skills context. Each agent role has a dedicated memory-curator skill that defines structure, pruning rules, and character budgets.
+FleetClaw sets `agents.defaults.bootstrapMaxChars` to 15,000 characters (down from OpenClaw's 20,000 default) to leave headroom for skills context. Each agent role has a dedicated memory-curator skill that defines structure, pruning rules, and character budgets.
 
 ### Per-agent-role design
 

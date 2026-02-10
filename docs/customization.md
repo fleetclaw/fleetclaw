@@ -56,17 +56,17 @@ Tune based on:
 Configure in each agent's `openclaw.json`:
 
 ```json
-"heartbeat": {
-  "every": "30m",
-  "activeHours": {
-    "start": "06:00",
-    "end": "18:00",
-    "timezone": "Australia/Perth"
+"agents": {
+  "defaults": {
+    "heartbeat": {
+      "every": "30m",
+      "prompt": "Run heartbeat tasks from your mounted skills."
+    }
   }
 }
 ```
 
-`activeHours` is the primary cost control — agents don't heartbeat outside shift hours.
+Heartbeat interval is the primary cost control — longer intervals reduce API costs.
 
 ## Adapting SOUL.md templates
 

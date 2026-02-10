@@ -28,7 +28,7 @@ OpenClaw agents read their identity from a workspace directory at `~/.openclaw/w
 - **SOUL.md** — The agent identity template with injected values. For asset agents: `{ASSET_ID}` and `{SERIAL}`. For Clawvisor and Clawordinator: just their name.
 - **MEMORY.md** — Not created during setup. OpenClaw auto-creates it on the first agent session. The memory-curator skills define its structure and pruning rules.
 
-The `skipBootstrap: true` setting in openclaw.json prevents OpenClaw from overwriting SOUL.md with its default template on first run.
+The `agents.defaults.skipBootstrap: true` setting in openclaw.json prevents OpenClaw from overwriting SOUL.md with its default template on first run.
 
 ## Per-user OpenClaw installation
 
@@ -96,27 +96,55 @@ Key settings to configure after onboard:
 
 ```json
 {
-  "skipBootstrap": true,
-  "bootstrapMaxChars": 15000,
-  "heartbeat": {
-    "every": "30m",
-    "prompt": "Run heartbeat tasks from your mounted skills.",
-    "activeHours": {
-      "start": "06:00",
-      "end": "18:00",
-      "timezone": "Australia/Perth"
+  "port": 7600,
+  "agents": {
+    "defaults": {
+      "skipBootstrap": true,
+      "bootstrapMaxChars": 15000,
+      "heartbeat": {
+        "every": "30m",
+        "prompt": "Run heartbeat tasks from your mounted skills."
+      },
+      "sandbox": {
+        "mode": "off"
+      },
+      "model": {
+        "primary": "fireworks/accounts/fireworks/models/<model>"
+      },
+      "models": {
+        "fireworks/accounts/fireworks/models/<model>": { "alias": "Model Name" }
+      },
+      "compaction": {
+        "mode": "safeguard",
+        "memoryFlush": {
+          "softThresholdTokens": 4000
+        }
+      }
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "fireworks": {
+        "baseUrl": "https://api.fireworks.ai/inference/v1",
+        "apiKey": "${FIREWORKS_API_KEY}",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "accounts/fireworks/models/<model>",
+            "name": "Model Name",
+            "reasoning": true,
+            "input": ["text"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 131072,
+            "maxTokens": 32768
+          }
+        ]
+      }
     }
   },
   "tools": {
     "deny": ["browser", "canvas", "nodes", "cron"]
-  },
-  "sandbox": {
-    "mode": "off"
-  },
-  "compaction": {
-    "memoryFlush": {
-      "softThresholdTokens": 4000
-    }
   },
   "skills": {
     "load": {
@@ -126,12 +154,16 @@ Key settings to configure after onboard:
 }
 ```
 
-Adjust `heartbeat.every` per agent role:
+Replace `<model>` with the actual model path (e.g., `accounts/fireworks/models/kimi-k2p5`). Any OpenAI-compatible provider (Together, Groq, Ollama) works the same way — change `baseUrl`, `apiKey`, and model details. Set `cost` values to actual provider pricing for cost tracking; zeros disable tracking. Use `reasoning: true` for models that support chain-of-thought.
+
+The `agents.defaults.models` allowlist is required alongside `model.primary` — without it, the model may resolve on cold start but 404 on subsequent calls. The `models.mode: "merge"` setting is required for custom providers.
+
+**Port configuration:** Set `port` at the root level of openclaw.json (not on the CLI). Each agent needs a unique port. OpenClaw's browser extension relay opens at exactly `gateway_port + 3` (browser control at `+2`, relay at `+3`). With sequential ports, agent N's relay collides with agent N+3's gateway. Space ports with gaps of 4+ or use non-sequential assignments.
+
+Adjust `agents.defaults.heartbeat.every` per agent role:
 - Asset agents: `"30m"`
 - Clawvisor: `"2h"`
 - Clawordinator: `"4h"`
-
-Adjust `activeHours` to match the organization's shift schedule.
 
 ## fleet.md format and ownership
 
@@ -199,9 +231,15 @@ Key settings across all platforms:
 
 | Setting | Asset agents | Clawvisor | Clawordinator |
 |---------|-------------|-----------|---------------|
-| Memory limit | 512 MB | 1 GB | 1 GB |
+| Memory limit | 1 GB | 1.5 GB | 1.5 GB |
 | Restart policy | On failure | On failure | On failure |
 | Restart delay | 10 seconds | 10 seconds | 10 seconds |
+
+Service start commands should use `openclaw gateway --force` (the `--force` flag kills stale port listeners on startup — this is the fix for orphaned gateway processes that survive service restarts). Port is configured in `openclaw.json` (root-level `port` key), not on the CLI.
+
+On Linux with `ProtectSystem=strict`, add `PrivateTmp=no` and include `/tmp` in `ReadWritePaths` — OpenClaw writes lock files to `/tmp/openclaw-*/`. Do NOT use `PrivateTmp=true` — it isolates /tmp, breaking `--force` which uses `lsof` on the real /tmp.
+
+When restarting multiple agents on the same host, stop all first, wait for ports to clear, then start all — prevents relay port race conditions.
 
 ## Clawordinator sudo access
 
@@ -227,22 +265,57 @@ Each agent needs an environment file with secrets and configuration:
 FIREWORKS_API_KEY=your-key-here
 TELEGRAM_BOT_TOKEN=your-bot-token-here
 FLEET_MD_PATH=/opt/fleetclaw/fleet.md
+NODE_OPTIONS=--max-old-space-size=768
 ```
+
+Use `--max-old-space-size=1024` for Clawvisor and Clawordinator (they process data from multiple asset outboxes).
 
 **Permissions:** Owner-only read (chmod 600), owned by the agent's system user. The service management system loads this file at service start.
 
 Never commit env files to version control.
 
+## Messaging channel setup
+
+The messaging plugin is disabled by default. Each agent needs its channel enabled and configured individually:
+
+1. **Enable the messaging plugin** (run as the agent user):
+   ```bash
+   openclaw plugins enable telegram
+   ```
+
+2. **Add the channel with the bot token:**
+   ```bash
+   openclaw channels add --channel telegram --token <token>
+   ```
+
+3. **Restart the agent service** after enabling the plugin.
+
+4. **Pair users** — after channel setup, users must be paired: the user messages the bot, gets a pairing code, then an admin approves it:
+   ```bash
+   openclaw pairing approve telegram <code>
+   ```
+
+Each agent needs its own channel connection with its own bot token.
+
+**Important:** CLI commands run via `sudo su` don't load the systemd EnvironmentFile. Source the env file first:
+```bash
+source /opt/fleetclaw/env/{id}.env && openclaw <command>
+```
+
 ## Key OpenClaw config options
 
 | Option | Value | Why |
 |--------|-------|-----|
-| `skipBootstrap` | `true` | Don't overwrite generated SOUL.md |
-| `bootstrapMaxChars` | `15000` | Leave headroom for skills context |
+| `agents.defaults.skipBootstrap` | `true` | Don't overwrite generated SOUL.md |
+| `agents.defaults.bootstrapMaxChars` | `15000` | Leave headroom for skills context |
+| `agents.defaults.heartbeat.every` | `"30m"` | Asset heartbeat interval (adjust per role) |
+| `agents.defaults.sandbox.mode` | `"off"` | No code execution sandboxing needed |
+| `agents.defaults.compaction.mode` | `"safeguard"` | Default compaction mode |
+| `agents.defaults.compaction.memoryFlush.softThresholdTokens` | `4000` | Trigger memory flush early |
+| `models.mode` | `"merge"` | Required for custom providers |
 | `tools.deny` | `["browser","canvas","nodes","cron"]` | Fleet agents don't need these |
-| `sandbox.mode` | `"off"` | No code execution sandboxing needed |
-| `compaction.memoryFlush.softThresholdTokens` | `4000` | Trigger memory flush early |
 | `skills.load.extraDirs` | `["/opt/fleetclaw/skills"]` | Tell OpenClaw where skills are |
+| `port` | unique per agent | Avoid gateway and relay port collisions |
 
 ## Cost implications
 
@@ -254,7 +327,7 @@ Each heartbeat is a full agent turn (~5K-15K input tokens). Budget at scale:
 | 50 assets | ~2,500 | Moderate |
 | 100 assets | ~4,800 | Consider 1h asset heartbeat |
 
-`activeHours` is the primary cost control lever. Plus Clawvisor and Clawordinator heartbeats, plus operator-initiated conversations.
+Heartbeat interval is the primary cost control lever — set longer intervals for agents that don't need frequent checks. Plus Clawvisor and Clawordinator heartbeats, plus operator-initiated conversations.
 
 ## Operational considerations
 
@@ -280,7 +353,7 @@ System service managers handle log rotation by default. For additional control o
 
 ### Resource limits
 
-Memory and CPU limits are set in the service configuration. OpenClaw agents typically use 200-400 MB of memory under normal load. The 512 MB limit for asset agents provides comfortable headroom.
+Memory and CPU limits are set in the service configuration. OpenClaw agents typically use 300-500 MB of memory under normal load. Asset agents need 1 GB MemoryMax; supervisory agents (Clawvisor, Clawordinator) need 1.5 GB due to larger working sets from processing multiple asset outboxes. Set `NODE_OPTIONS=--max-old-space-size=768` (assets) or `--max-old-space-size=1024` (supervisory) in the env file.
 
 ### Kernel tuning (Linux)
 
@@ -313,7 +386,10 @@ For a new fleet deployment:
 - [ ] Create state.md for asset agents
 - [ ] Install skills to shared directory
 - [ ] Configure skill discovery in openclaw.json
-- [ ] Tune openclaw.json (heartbeat, activeHours, bootstrapMaxChars)
+- [ ] Tune openclaw.json (agents.defaults: heartbeat, bootstrapMaxChars, model)
+- [ ] Enable messaging plugin and add channel per agent
+- [ ] Pair/authorize users via openclaw pairing approve
+- [ ] Configure LLM provider in openclaw.json (models.providers)
 - [ ] Set up fleet.md with initial fleet roster
 - [ ] Set ACLs (outbox read, inbox write, fleet.md, env files)
 - [ ] Configure Clawordinator sudoers

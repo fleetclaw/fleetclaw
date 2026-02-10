@@ -43,7 +43,7 @@ Data flows: Asset Agents → (outbox files) → Clawvisor → (escalations) → 
    - Copy the appropriate SOUL.md template from `templates/`
    - Create inbox/outbox directories
    - Configure skills (point OpenClaw at the skills directory)
-   - Tune openclaw.json (heartbeat, activeHours, bootstrapMaxChars)
+   - Tune openclaw.json (agents.defaults: heartbeat, bootstrapMaxChars, model)
    - Set ACLs (permissions doc)
    - Create env file with secrets
    - Create and start the system service (platform doc)

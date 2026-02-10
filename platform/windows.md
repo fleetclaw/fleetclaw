@@ -56,7 +56,7 @@ choco install nssm
 ### Create a service
 
 ```powershell
-nssm install fc-agent-ex001 "C:\Program Files\nodejs\node.exe" "C:\FleetClaw\agents\fc-ex001\.openclaw\dist\index.js" gateway
+nssm install fc-agent-ex001 "C:\Program Files\nodejs\openclaw.cmd" gateway --force
 
 # Set working directory
 nssm set fc-agent-ex001 AppDirectory "C:\FleetClaw\agents\fc-ex001\.openclaw"
@@ -74,8 +74,8 @@ nssm set fc-agent-ex001 AppRestartDelay 10000
 nssm set fc-agent-ex001 AppStdout "C:\FleetClaw\logs\fc-agent-ex001.log"
 nssm set fc-agent-ex001 AppStderr "C:\FleetClaw\logs\fc-agent-ex001.err"
 
-# Set memory limit (512 MB)
-nssm set fc-agent-ex001 AppEnvironmentExtra+ "NODE_OPTIONS=--max-old-space-size=384"
+# Set memory limit (1 GB for assets, 1.5 GB for supervisory)
+nssm set fc-agent-ex001 AppEnvironmentExtra+ "NODE_OPTIONS=--max-old-space-size=768"
 ```
 
 ### Service commands

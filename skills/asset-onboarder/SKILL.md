@@ -45,7 +45,7 @@ Once validated, the following steps bring the new asset agent online. Reference 
    - Copy the SOUL.md template from `templates/soul-asset.md`, substituting `{ASSET_ID}` and `{SERIAL}` with the actual values
    - Create `inbox/` and `outbox/` directories in the workspace
    - Mount or copy the appropriate skills (fuel-logger, meter-reader, pre-op, issue-reporter, nudger, memory-curator-asset)
-   - Tune `openclaw.json` settings: `bootstrapMaxChars: 15000`, heartbeat interval, shift configuration
+   - Tune `openclaw.json` `agents.defaults`: `bootstrapMaxChars: 15000`, heartbeat interval
 
 5. **Set file permissions** using the platform's ACL mechanism. The asset agent user needs read/write on its own workspace. Clawvisor needs read access to this agent's outbox/ and state.md, and write access to its inbox/. See `docs/permissions.md` for the specific ACL rules.
 
@@ -53,7 +53,7 @@ Once validated, the following steps bring the new asset agent online. Reference 
 
 7. **Update fleet.md** — add the new asset ID to the Active section with today's date.
 
-8. **Remind user about messaging channel configuration.** The new agent needs its own messaging channel token/configuration to function. After confirming the service is running, remind the user to configure the agent's messaging channel credentials in the environment file.
+8. **Set up messaging channel.** The new agent needs its own messaging channel. After confirming the service is running: enable the messaging plugin (`openclaw plugins enable telegram`), add the channel with the bot token (`openclaw channels add --channel telegram --token <token>`), and restart the agent service. Remind the user that users must be paired via `openclaw pairing approve` before they can message the agent.
 
 ### Confirm to user
 

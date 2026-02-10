@@ -17,9 +17,10 @@ FleetClaw is a **platform, not a product**. Behavior is defined entirely by **sk
 - `docs/implementation.md` -- Setup guide: OpenClaw install, FleetClaw injection, services
 - `docs/skill-authoring.md` -- How to write skills
 - `docs/customization.md` -- Extending FleetClaw for specific organizations
+- `docs/scheduling.md` -- Heartbeat, cron, and scheduling reference
 - `platform/` -- OS-specific references (Ubuntu, macOS, Windows)
 - `skills/` -- 21 Tier 1 skills, each in `{name}/SKILL.md`
-- `templates/` -- SOUL.md identity templates per agent role
+- `templates/` -- SOUL.md identity templates and HEARTBEAT.md templates per agent role
 
 ## Architecture
 

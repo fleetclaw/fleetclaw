@@ -113,6 +113,31 @@ systemctl restart fc-agent-ex001
 systemctl disable fc-agent-ex001
 ```
 
+### Upgrading OpenClaw
+
+```bash
+# 1. Stop all agent services
+sudo systemctl stop fc-agent-*
+
+# 2. Verify all stopped
+systemctl is-active fc-agent-* 2>&1 | grep -v inactive
+# (no output = all stopped)
+
+# 3. Update global package
+sudo npm install -g openclaw@<version>
+
+# 4. Verify version
+openclaw --version
+
+# 5. Start all agent services
+sudo systemctl start fc-agent-*
+
+# 6. Verify all running (wait ~30s for startup)
+systemctl is-active fc-agent-*
+```
+
+The `fc-agent-*` wildcard works with systemctl. For selective upgrades (if agents are split across hosts), list specific service names instead.
+
 ### Reload after unit file changes
 
 ```bash

@@ -133,6 +133,25 @@ launchctl list | grep fleetclaw
 tail -f /var/log/fleetclaw/fc-agent-ex001.log
 ```
 
+### Upgrading OpenClaw
+
+```bash
+# 1. Stop all agents
+launchctl unload /Library/LaunchDaemons/com.fleetclaw.agent.*.plist
+
+# 2. Update global package
+sudo npm install -g openclaw@<version>
+
+# 3. Verify version
+openclaw --version
+
+# 4. Start all agents
+launchctl load /Library/LaunchDaemons/com.fleetclaw.agent.*.plist
+
+# 5. Check status
+launchctl list | grep fleetclaw
+```
+
 ## File permissions (macOS ACLs)
 
 macOS uses a different ACL syntax from Linux. Use `chmod +a` instead of `setfacl`.

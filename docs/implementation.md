@@ -15,7 +15,7 @@ Setting up a FleetClaw deployment involves:
 
 1. Create system users for each agent
 2. Install OpenClaw per user
-3. Inject FleetClaw customizations (SOUL.md, skills, inbox/outbox, configuration)
+3. Inject FleetClaw customizations (SOUL.md, HEARTBEAT.md, skills, inbox/outbox, configuration)
 4. Set filesystem permissions (ACLs)
 5. Create and start system services
 6. Configure fleet.md
@@ -109,7 +109,17 @@ status: active
 
 Skills will populate additional fields during operation.
 
-### 4. Link skills
+### 4. Populate HEARTBEAT.md
+
+OpenClaw skips heartbeat ticks when HEARTBEAT.md is effectively empty (only blank lines, headers, or empty checkboxes). Copy the appropriate template to activate heartbeats:
+
+- **Asset agents:** Copy `templates/heartbeat-asset.md` → `~/.openclaw/workspace/HEARTBEAT.md`
+- **Clawvisor:** Copy `templates/heartbeat-clawvisor.md` → `~/.openclaw/workspace/HEARTBEAT.md`
+- **Clawordinator:** Copy `templates/heartbeat-clawordinator.md` → `~/.openclaw/workspace/HEARTBEAT.md`
+
+Keep HEARTBEAT.md concise — a short checklist that tells the agent what to check on each tick. The agent reads it strictly and replies HEARTBEAT_OK (suppressed — no message sent) if nothing needs attention. See `docs/scheduling.md` for the full heartbeat model.
+
+### 5. Link skills
 
 OpenClaw discovers skills from directories listed in `skills.load.extraDirs` in openclaw.json. Point it to the shared skills directory where FleetClaw skills are installed:
 
@@ -130,7 +140,7 @@ ln -s /opt/fleetclaw/skills/meter-reader ~/.openclaw/workspace/skills/meter-read
 # ... etc for each skill this agent role uses
 ```
 
-### 5. Tune openclaw.json
+### 6. Tune openclaw.json
 
 Key settings to configure after onboard:
 
@@ -143,7 +153,11 @@ Key settings to configure after onboard:
       "bootstrapMaxChars": 15000,
       "heartbeat": {
         "every": "30m",
-        "prompt": "Run heartbeat tasks from your mounted skills."
+        "activeHours": {
+          "start": "06:00",
+          "end": "20:00",
+          "timezone": "America/Moncton"
+        }
       },
       "sandbox": {
         "mode": "off"
@@ -200,10 +214,16 @@ The `agents.defaults.models` allowlist is required alongside `model.primary` —
 
 **Port configuration:** Set `port` at the root level of openclaw.json (not on the CLI). Each agent needs a unique port. OpenClaw's browser extension relay opens at exactly `gateway_port + 3` (browser control at `+2`, relay at `+3`). With sequential ports, agent N's relay collides with agent N+3's gateway. Space ports with gaps of 4+ or use non-sequential assignments.
 
+Omitting `prompt` from the heartbeat config uses the OpenClaw default, which reads HEARTBEAT.md and follows it strictly. If nothing needs attention the agent replies HEARTBEAT_OK (suppressed — no message sent to the operator).
+
+`activeHours` prevents heartbeat API calls outside operational hours. `start` is inclusive, `end` is exclusive (24:00 allowed), and `timezone` is IANA format. Replace `America/Moncton` with the fleet's operational timezone.
+
 Adjust `agents.defaults.heartbeat.every` per agent role:
 - Asset agents: `"30m"`
 - Clawvisor: `"2h"`
 - Clawordinator: `"4h"`
+
+`activeHours` should match the fleet's operational schedule. Different roles can have different active hours if needed (e.g., Clawordinator might run 24h for urgent escalations).
 
 ## fleet.md format and ownership
 
@@ -349,6 +369,7 @@ source /opt/fleetclaw/env/{id}.env && openclaw <command>
 | `agents.defaults.skipBootstrap` | `true` | Don't overwrite generated SOUL.md |
 | `agents.defaults.bootstrapMaxChars` | `15000` | Leave headroom for skills context |
 | `agents.defaults.heartbeat.every` | `"30m"` | Asset heartbeat interval (adjust per role) |
+| `agents.defaults.heartbeat.activeHours` | `{start, end, timezone}` | Suppress heartbeats outside operational hours |
 | `agents.defaults.sandbox.mode` | `"off"` | No code execution sandboxing needed |
 | `agents.defaults.compaction.mode` | `"safeguard"` | Default compaction mode |
 | `agents.defaults.compaction.memoryFlush.softThresholdTokens` | `4000` | Trigger memory flush early |
@@ -361,13 +382,13 @@ source /opt/fleetclaw/env/{id}.env && openclaw <command>
 
 Each heartbeat is a full agent turn (~5K-15K input tokens). Budget at scale:
 
-| Fleet size | Heartbeats/day | Notes |
-|-----------|---------------|-------|
-| 10 assets | ~500 | Manageable |
-| 50 assets | ~2,500 | Moderate |
-| 100 assets | ~4,800 | Consider 1h asset heartbeat |
+| Fleet size | Heartbeats/day (24h) | With activeHours (06:00-20:00) |
+|-----------|---------------------|-------------------------------|
+| 10 assets | ~500 | ~290 |
+| 50 assets | ~2,500 | ~1,450 |
+| 100 assets | ~4,800 | ~2,800 |
 
-Heartbeat interval is the primary cost control lever — set longer intervals for agents that don't need frequent checks. Plus Clawvisor and Clawordinator heartbeats, plus operator-initiated conversations.
+`activeHours` reduces daily heartbeat counts — a 06:00-20:00 window cuts asset heartbeats from ~48/day to ~28/day per agent. Heartbeat interval is the primary cost control lever — set longer intervals for agents that don't need frequent checks. Plus Clawvisor and Clawordinator heartbeats, plus operator-initiated conversations.
 
 ## Operational considerations
 
@@ -422,6 +443,7 @@ For a new fleet deployment:
 - [ ] Create system user per agent
 - [ ] Install OpenClaw per user (`openclaw onboard --install-daemon`)
 - [ ] Copy SOUL.md templates with substitutions
+- [ ] Populate HEARTBEAT.md from templates per agent role
 - [ ] Create inbox/outbox directories per agent
 - [ ] Create state.md for asset agents
 - [ ] Install skills to shared directory

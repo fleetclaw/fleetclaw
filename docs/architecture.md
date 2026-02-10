@@ -85,7 +85,7 @@ Skills are markdown files that teach agents how to do things. They contain plain
 
 Every skill follows this pattern:
 
-1. **Trigger** — When does the agent activate this skill? (message, heartbeat, session start, inbox message)
+1. **Trigger** — When does the agent activate this skill? (message, heartbeat via HEARTBEAT.md, session start, inbox message)
 2. **Input** — What data does it consume? (user messages, inbox files, outbox files, state.md, fleet.md, MEMORY.md, .env variables)
 3. **Behavior** — Plain English instructions. Not code. Not pseudocode.
 4. **Output** — What does it produce? (outbox writes, inbox writes, state.md updates, fleet.md updates, MEMORY.md updates, messages to user, escalation flags)
@@ -270,6 +270,10 @@ Each agent role has a different heartbeat cadence matching its operational rhyth
 | Clawordinator | 4-8 hr | Strategic, mostly reactive; only checks escalation queue |
 
 Configurable per organization. See `docs/customization.md` for tuning guidance.
+
+OpenClaw uses `HEARTBEAT.md` in each agent's workspace to drive heartbeat behavior. If HEARTBEAT.md is missing or effectively empty (only blank lines, headers, or empty checkboxes), the heartbeat tick is skipped — no LLM call is made. HEARTBEAT.md should be a concise checklist; the agent reads it on each tick and follows it strictly. Templates live in `templates/heartbeat-{role}.md`.
+
+`activeHours` restricts heartbeats to operational hours (e.g., 06:00-20:00), reducing off-shift API costs. See `docs/scheduling.md` for the full scheduling model including cron.
 
 ## Data flow — Complete picture
 

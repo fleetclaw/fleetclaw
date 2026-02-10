@@ -52,6 +52,7 @@ Tune based on:
 - **Shift length** — Shorter shifts need shorter asset heartbeats so nudges land during the shift
 - **Cost tolerance** — Each heartbeat is an LLM API call. Longer intervals = lower cost.
 - **Freshness requirements** — How quickly does management need to see anomalies or compliance gaps?
+- **Active hours** — Restrict heartbeats to operational shifts. Prevents off-hours API costs. Use `activeHours` with `start`, `end` (exclusive, 24:00 allowed), and `timezone` (IANA format).
 
 Configure in each agent's `openclaw.json`:
 
@@ -60,13 +61,19 @@ Configure in each agent's `openclaw.json`:
   "defaults": {
     "heartbeat": {
       "every": "30m",
-      "prompt": "Run heartbeat tasks from your mounted skills."
+      "activeHours": {
+        "start": "06:00",
+        "end": "20:00",
+        "timezone": "America/Moncton"
+      }
     }
   }
 }
 ```
 
-Heartbeat interval is the primary cost control — longer intervals reduce API costs.
+Replace `America/Moncton` with the fleet's operational timezone. Heartbeat interval is the primary cost control — longer intervals reduce API costs.
+
+HEARTBEAT.md must have real content for heartbeats to fire — OpenClaw skips ticks when it is effectively empty. See `docs/implementation.md` for setup and `templates/` for role-specific templates.
 
 ## Adapting SOUL.md templates
 
@@ -94,7 +101,7 @@ OpenClaw agents have access to various tools by default. FleetClaw restricts unn
 Organizations may want to:
 
 - **Allow browser** — For skills that fetch external data (telematics APIs, weather)
-- **Allow cron** — For scheduled tasks beyond heartbeat
+- **Allow cron** — For scheduled tasks beyond heartbeat. Cron provides exact timing, session isolation, and one-shot reminders. See `docs/scheduling.md` for the full cron reference and when to use cron vs heartbeat
 - **Deny exec** — For high-security environments (prevents agents from running shell commands)
 
 Consider the security implications of each tool. See OpenClaw documentation for the full tool list.

@@ -56,6 +56,8 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 
 - MEMORY.md bootstrap limit: 15,000 chars
 - Heartbeat defaults: asset 30m, clawvisor 2h, clawordinator 4h
+- `activeHours` restricts heartbeats to operational hours (e.g., 06:00-20:00)
+- HEARTBEAT.md must have real content or heartbeat ticks are skipped
 
 ## When Editing Skills
 

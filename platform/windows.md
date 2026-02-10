@@ -97,6 +97,27 @@ nssm status fc-agent-ex001
 nssm remove fc-agent-ex001 confirm
 ```
 
+### Upgrading OpenClaw
+
+```powershell
+# 1. Stop all agent services
+Get-Service fc-agent-* | Stop-Service
+
+# 2. Update global package
+npm install -g openclaw@<version>
+
+# 3. Verify version
+openclaw --version
+
+# 4. Start all agent services
+Get-Service fc-agent-* | Start-Service
+
+# 5. Check status
+Get-Service fc-agent-* | Format-Table Name, Status
+```
+
+NSSM services are registered as standard Windows services, so `Get-Service`/`Stop-Service`/`Start-Service` work. Alternatively, use `nssm stop fc-agent-ex001` per agent.
+
 ## File permissions (NTFS ACLs)
 
 ### Grant Clawvisor read access to asset outbox

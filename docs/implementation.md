@@ -38,6 +38,46 @@ Each agent runs as its own system user. For each agent:
 2. **Install OpenClaw as that user** — Run `openclaw onboard --install-daemon` under the agent's user account. This sets up the OpenClaw runtime in `~/.openclaw/`.
 3. **Verify** — The `~/.openclaw/` directory should contain `dist/`, `openclaw.json`, and `workspace/`.
 
+## Upgrading OpenClaw
+
+All agents on a host share the same globally-installed OpenClaw binary (`/usr/bin/openclaw` on Linux, `/usr/local/bin/openclaw` on macOS, `openclaw.cmd` on Windows). Upgrading the global package upgrades every agent simultaneously — no per-agent updates needed.
+
+### Upgrade procedure
+
+1. **Check current version:**
+   ```bash
+   openclaw --version
+   ```
+
+2. **Stop all agent services on the host.** Stop everything first, then start everything after — this avoids relay port race conditions (see "System service configuration" below for why). See the platform docs for OS-specific stop commands.
+
+3. **Update the global package:**
+   ```bash
+   sudo npm install -g openclaw@<version>
+   ```
+   Use `openclaw@latest` for the latest stable release, or pin a specific version. Alternatively: `sudo npm update -g openclaw`.
+
+4. **Verify new version:**
+   ```bash
+   openclaw --version
+   ```
+
+5. **Start all agent services.** See the platform docs for OS-specific start commands.
+
+6. **Verify services are running.** Gateway warmup takes 3-4 minutes while TypeScript plugins compile — services may report as active before the agent is fully responsive. Check logs to confirm the gateway is ready.
+
+### Rollback
+
+Same procedure: stop services, install the previous version (`sudo npm install -g openclaw@<previous-version>`), start services.
+
+### Breaking changes
+
+Check OpenClaw release notes before upgrading. If a release changes config format, update all agents' `openclaw.json` files while services are stopped.
+
+### What doesn't change
+
+For non-breaking upgrades, `openclaw.json` and service configuration files (systemd units, launchd plists, NSSM settings) remain unchanged. ExecStart points to the global binary, which npm replaces in-place.
+
 ## FleetClaw injection
 
 After OpenClaw is installed, customize each agent's workspace:

@@ -199,14 +199,6 @@ chmod 640 /opt/fleetclaw/fleet.md
 
 A nightly cron job archives outbox files older than 30 days and compresses month directories older than 90 days. See `docs/scheduling.md` for the archival model.
 
-### Install the cron job
-
-Add to root's crontab (`sudo crontab -e`):
-
-```cron
-0 2 * * * /opt/fleetclaw/scripts/archive-outboxes.sh
-```
-
 ### Create the archival script
 
 ```bash
@@ -215,6 +207,7 @@ cat > /opt/fleetclaw/scripts/archive-outboxes.sh << 'SCRIPT'
 #!/bin/bash
 # FleetClaw outbox archival — runs nightly via cron
 # Archives outbox files older than RETENTION_DAYS, compresses months older than 90 days
+# macOS differences from Ubuntu: /Users/fc-* home paths, stat -f "%Sm" for month extraction
 
 RETENTION_DAYS=${FC_RETENTION_DAYS:-30}
 
@@ -245,12 +238,26 @@ SCRIPT
 chmod +x /opt/fleetclaw/scripts/archive-outboxes.sh
 ```
 
-The script iterates over all `/Users/fc-*` agent home directories. The only difference from the Ubuntu version is the home directory path and using `stat -f "%Sm"` instead of `date -r` for extracting the file's month.
+### Install the cron job
+
+Add to root's crontab (`sudo crontab -e`):
+
+```cron
+0 2 * * * /opt/fleetclaw/scripts/archive-outboxes.sh
+```
 
 To override the 30-day default, set `FC_RETENTION_DAYS` in the crontab:
 
 ```cron
 0 2 * * * FC_RETENTION_DAYS=7 /opt/fleetclaw/scripts/archive-outboxes.sh
+```
+
+### Verify
+
+```bash
+# Dry run — list files that would be archived (without moving them)
+find /Users/fc-*/. -path "*/.openclaw/workspace/outbox/*.md" -mtime +30 \
+  ! -name ".clawvisor-last-read"
 ```
 
 ## Log directory

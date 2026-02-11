@@ -115,7 +115,7 @@ If the marker file doesn't exist, Clawvisor processes all files in the outbox.
 2. **Processed** — Clawvisor (or another reader) has read it; marker updated past its timestamp
 3. **Archived** — A nightly OS cron job moves files older than the retention period (default: 30 days) to `outbox-archive/YYYY-MM/`. Month directories older than 90 days are compressed.
 
-The `.clawvisor-last-read` marker file is never archived or deleted — it stays in `outbox/` permanently. See `docs/scheduling.md` for the archival model and platform docs for setup commands.
+The `.clawvisor-last-read` marker file is never archived — it must remain in `outbox/` for read tracking. See `docs/scheduling.md` for the archival model.
 
 ### Inbox files
 

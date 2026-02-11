@@ -268,14 +268,6 @@ sysctl -p
 
 A nightly cron job archives outbox files older than 30 days and compresses month directories older than 90 days. See `docs/scheduling.md` for the archival model.
 
-### Install the cron job
-
-Add to root's crontab (`sudo crontab -e`):
-
-```cron
-0 2 * * * /opt/fleetclaw/scripts/archive-outboxes.sh
-```
-
 ### Create the archival script
 
 ```bash
@@ -314,7 +306,15 @@ SCRIPT
 chmod +x /opt/fleetclaw/scripts/archive-outboxes.sh
 ```
 
-The script iterates over all `/home/fc-*` agent home directories. To override the 30-day default, set `FC_RETENTION_DAYS` in the crontab:
+### Install the cron job
+
+Add to root's crontab (`sudo crontab -e`):
+
+```cron
+0 2 * * * /opt/fleetclaw/scripts/archive-outboxes.sh
+```
+
+To override the 30-day default, set `FC_RETENTION_DAYS` in the crontab:
 
 ```cron
 0 2 * * * FC_RETENTION_DAYS=7 /opt/fleetclaw/scripts/archive-outboxes.sh

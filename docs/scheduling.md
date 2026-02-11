@@ -95,22 +95,20 @@ They are complementary, not alternatives. Best practice: heartbeat for routine a
 
 ### Why
 
-Outbox files accumulate indefinitely. Every fuel log, meter reading, pre-op, and issue report is a file that never gets cleaned up on its own. On an active fleet, a single asset can produce 10+ outbox files per shift. Without archival, disk usage grows without bound.
+Every fuel log, meter reading, pre-op, and issue report is an outbox file that never gets cleaned up on its own. A single asset can produce 10+ files per shift, so disk usage grows without bound.
 
 ### What it does
 
-A nightly OS cron job handles archival in two phases:
+A nightly OS cron job archives in two phases:
 
 1. **Archive** — Moves outbox files older than the retention period (default: 30 days) from `outbox/` to `outbox-archive/YYYY-MM/`
 2. **Compress** — Compresses `outbox-archive/` month directories older than 90 days into `.tar.gz` archives (Linux/macOS) or `.zip` archives (Windows)
 
-The `.clawvisor-last-read` marker file in each outbox is always excluded — it must stay in place for Clawvisor's read tracking to work. See `docs/communication.md` for the marker file protocol.
+The `.clawvisor-last-read` marker file is always excluded — it must remain in `outbox/` for Clawvisor's read tracking. See `docs/communication.md` for the marker file protocol.
 
 ### Default retention: 30 days
 
-The default retention period is 30 days. This matches the `anomaly-detector` skill, which scans 30 days of issue-type outbox files for recurrence patterns. Shorter retention (e.g., 7 days) breaks anomaly detection — only shorten it if your deployment doesn't use that skill.
-
-Retention tiers for different needs:
+The 30-day default matches the `anomaly-detector` skill, which scans 30 days of issue-type outbox files for recurrence patterns. Shorter retention breaks anomaly detection — only shorten it if your deployment doesn't use that skill.
 
 | Retention | Use case | Trade-off |
 |-----------|----------|-----------|
@@ -120,14 +118,14 @@ Retention tiers for different needs:
 
 ### Why OS cron, not OpenClaw cron
 
-This is an OS-level cron job (crontab on Linux/macOS, Task Scheduler on Windows), not an OpenClaw cron job or a skill. Reasons:
+This is an OS-level cron job (crontab on Linux/macOS, Task Scheduler on Windows), not an OpenClaw cron job. Reasons:
 
 - **No LLM reasoning needed** — archival is a deterministic file operation
-- **Runs as root or the agent user** — needs filesystem write access to move files
+- **Runs as root** — needs filesystem write access across agent home directories
 - **Exact timing** — runs once nightly at a fixed time, not on a heartbeat interval
-- **No API cost** — no LLM call for a simple file cleanup
+- **No API cost** — no LLM call for a simple file operation
 
-OpenClaw cron (see "Cron" section above) is for tasks that need agent reasoning. OS cron is for exact-timing filesystem tasks that don't.
+OpenClaw cron is for tasks that need agent reasoning. OS cron is for deterministic filesystem tasks.
 
 ### Setup
 

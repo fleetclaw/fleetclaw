@@ -393,9 +393,7 @@ Each heartbeat is a full agent turn (~5K-15K input tokens). Budget at scale:
 
 ## Outbox archival
 
-Outbox files grow indefinitely without cleanup. Set up a nightly OS cron job to archive files older than the retention period (default: 30 days) to `outbox-archive/YYYY-MM/` in each agent's workspace. Month directories older than 90 days are compressed.
-
-This is an OS-level cron job, not an OpenClaw cron job — no LLM reasoning needed for file cleanup. See `docs/scheduling.md` for the archival model and the platform docs for OS-specific commands:
+A nightly OS cron job archives outbox files older than the retention period (default: 30 days) and compresses old month directories. See `docs/scheduling.md` for the archival model (retention tiers, why OS cron) and the platform docs for setup commands:
 
 - `platform/ubuntu.md` — crontab + bash
 - `platform/macos.md` — crontab + bash

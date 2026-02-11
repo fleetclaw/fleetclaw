@@ -26,7 +26,7 @@ _What data does this skill consume?_
 - **User messages:** Natural language from operator/user
 - **Inbox files:** _(describe expected message types and their frontmatter fields)_
 - **Outbox files:** _(for Clawvisor/Clawordinator reading other agents' outboxes)_
-- **state.md:** _(what state fields does this skill need?)_
+- **AGENTS.md (State):** _(what state fields does this skill need?)_
 - **fleet.md:** _(does this skill need fleet composition data?)_
 - **MEMORY.md:** _(what historical context does this skill need?)_
 - **.env variables:** _(API credentials, config — specify variable names)_
@@ -47,7 +47,7 @@ _What does this skill produce?_
 
 - **Outbox writes:** _(describe file format — YAML frontmatter + markdown body)_
 - **Inbox writes:** _(for Clawvisor/Clawordinator writing to other agents' inboxes)_
-- **state.md updates:** _(what fields to update)_
+- **AGENTS.md (State) updates:** _(what fields to update)_
 - **fleet.md updates:** _(Clawordinator only)_
 - **MEMORY.md updates:** _(what to remember)_
 - **Messages to user:** _(conversational responses)_

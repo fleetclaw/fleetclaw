@@ -84,13 +84,13 @@ Data flows: Asset Agents → (outbox files) → Clawvisor → (escalations) → 
 
 ### Asset agents additionally
 
-- state.md initialized
-- ACL: Clawvisor can read outbox/ and state.md
+- `## State` section added to AGENTS.md
+- ACL: Clawvisor can read outbox/ and AGENTS.md
 - ACL: Clawvisor and Clawordinator can write to inbox/
 
 ### Clawvisor additionally
 
-- ACL: Can read all asset outbox/ directories and state.md files
+- ACL: Can read all asset outbox/ directories and AGENTS.md files
 - ACL: Can write to all asset inbox/ directories
 - ACL: Can write to Clawordinator's inbox/
 

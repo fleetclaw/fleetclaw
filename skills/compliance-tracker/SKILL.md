@@ -17,7 +17,7 @@ _Track and report on data capture compliance across the fleet — pre-ops, fuel 
 
 - **User messages:** Compliance questions from supervisors, foremen, managers
 - **fleet.md:** Active asset list (fleet composition)
-- **Asset state.md files:** Per-asset compliance timestamps (last_fuel_ts, last_preop_ts, last_meter_ts, last_seen, operator, status)
+- **Asset AGENTS.md (State):** Per-asset compliance timestamps (last_fuel_ts, last_preop_ts, last_meter_ts, last_seen, operator, status)
 - **MEMORY.md:** Compliance Trends section (previous percentages and trends for comparison)
 
 ## Behavior
@@ -29,7 +29,7 @@ Compliance tracking is FleetClaw's core mission. This skill monitors whether ope
 Every 2 hours, scan the fleet for compliance gaps:
 
 1. Read the Active section of fleet.md to get all active asset IDs.
-2. For each active asset, read compliance-relevant timestamps from the asset's state.md: last_fuel_ts, last_preop_ts, last_meter_ts, last_seen, operator.
+2. For each active asset, read compliance-relevant timestamps from the `## State` section in the asset's AGENTS.md: last_fuel_ts, last_preop_ts, last_meter_ts, last_seen, operator.
 3. Flag assets that are non-compliant against these thresholds:
    - **Pre-op:** No pre-op inspection logged in the last 12 hours for an active asset. This means the current shift likely started without a pre-op.
    - **Fuel:** No fuel log in the last 24 hours for an active asset. Most machines fuel at least once per shift.
@@ -44,7 +44,7 @@ Every 2 hours, scan the fleet for compliance gaps:
 
 When a supervisor, foreman, or manager asks about compliance:
 
-1. Pull fresh data from asset state.md files, not just MEMORY.md. Compliance questions deserve current numbers.
+1. Pull fresh data from asset AGENTS.md files (the `## State` section), not just MEMORY.md. Compliance questions deserve current numbers.
 2. Answer the specific question asked:
    - "Who hasn't done pre-ops?" — List the non-compliant assets with their operators and how long ago their last pre-op was.
    - "Compliance this week?" — Provide percentages for all three categories with trend direction.

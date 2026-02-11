@@ -16,7 +16,7 @@ _Accept casual meter readings from operators, validate them, and record them._
 
 - **User messages:** Natural language meter reports
 - **Outbox files:** Previous meter entries in outbox/ (type: meter) for delta calculation and trend validation
-- **state.md:** `last_meter`, `last_meter_ts` for quick reference
+- **AGENTS.md (State):** `last_meter`, `last_meter_ts` for quick reference
 - **MEMORY.md:** Last meter reading in Recent Context, typical usage rate in Learned Patterns
 
 ## Behavior
@@ -44,7 +44,7 @@ When an operator reports a meter reading:
    - If the operator corrects themselves, use the corrected value.
    - Only ask once. Don't interrogate.
 
-5. Write the reading to outbox/ and update state.md.
+5. Write the reading to outbox/ and update `## State`.
 
 6. Update MEMORY.md Recent Context with the new reading. Include date, value, type, and delta. Keep only the last 3 meter readings in MEMORY.md -- remove the oldest if needed. If usage rate is shifting (e.g., machine running longer days), note the trend in Learned Patterns.
 
@@ -68,7 +68,7 @@ A bare number like "8542" could be a meter reading or a fuel amount. Consider th
   delta: {DELTA}
   days_since: {DAYS}
   ```
-- **state.md updates:** Update `last_meter`, `last_meter_ts` with the new values.
+- **AGENTS.md (State) updates:** Update `last_meter`, `last_meter_ts` with the new values.
 - **MEMORY.md updates:** Add meter reading to Recent Context section (date, value, type, delta). Update Learned Patterns if daily usage rate is shifting. Keep at most 3 readings in Recent Context.
 - **Messages to user:** Confirmation with delta and usage context. Example: "Logged 8542 hours. That's 87 hours over the last 6 days -- about 14.5 hrs/day."
 

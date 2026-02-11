@@ -12,7 +12,7 @@ FleetClaw is a **platform, not a product**. Behavior is defined entirely by **sk
 
 - `AGENTS.md` -- Entry point for coding agents. Start here for setup and architecture overview.
 - `docs/architecture.md` -- System design, agent roles, data flow, communication model
-- `docs/communication.md` -- Filesystem message protocol (inbox/outbox format, state.md, fleet.md)
+- `docs/communication.md` -- Filesystem message protocol (inbox/outbox format, fleet.md)
 - `docs/permissions.md` -- POSIX ACL permission model for multi-agent filesystem access
 - `docs/implementation.md` -- Setup guide: OpenClaw install, FleetClaw injection, services
 - `docs/skill-authoring.md` -- How to write skills
@@ -42,7 +42,7 @@ Key files per agent:
 - `outbox/` -- Files the agent writes to share data
 - `outbox-archive/` -- Archived outbox files (managed by OS cron job, not agents)
 - `inbox/` -- Files other agents write to send messages
-- `state.md` -- Current operational state (flat key-value)
+- `AGENTS.md ## State` -- Current operational state (flat key-value, always in context)
 - `fleet.md` -- Shared fleet registry (owned by Clawordinator, readable by Clawvisor)
 - `MEMORY.md` -- Curated working memory
 
@@ -68,7 +68,7 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 - Follow the structure in `skills/SKILL-TEMPLATE.md`
 - YAML frontmatter defines machine-readable contract (name, description, bins, env requirements)
 - `## Behavior` stays freeform -- existing Tier 1 skills are the style guide
-- Skills reference filesystem operations: inbox files, outbox files, state.md, fleet.md, MEMORY.md
+- Skills reference filesystem operations: inbox files, outbox files, AGENTS.md `## State`, fleet.md, MEMORY.md
 - Skills should be channel-agnostic -- don't assume a specific messaging platform
 - Skills should be platform-agnostic -- use generic phrasing like "stop the agent service" rather than OS-specific commands. Platform docs provide the specifics.
 - Overdue Condition format: `[what's missing] after [time threshold] since [reference event]`

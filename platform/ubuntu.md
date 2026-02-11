@@ -173,10 +173,10 @@ setfacl -R -m u:fc-clawordinator:rwx /home/fc-ex001/.openclaw/workspace/inbox/
 setfacl -R -d -m u:fc-clawordinator:rwx /home/fc-ex001/.openclaw/workspace/inbox/
 ```
 
-### Set ACLs on asset state.md (Clawvisor read access)
+### Set ACLs on asset AGENTS.md (Clawvisor read access)
 
 ```bash
-setfacl -m u:fc-clawvisor:r /home/fc-ex001/.openclaw/workspace/state.md
+setfacl -m u:fc-clawvisor:r /home/fc-ex001/.openclaw/workspace/AGENTS.md
 ```
 
 ### Set ACLs on Clawordinator inbox (Clawvisor write access for escalations)

@@ -20,7 +20,7 @@ _Proactively scan fleet data for anomalies — fuel burn spikes, meter gaps, rec
   - Meter entries (type: meter) — recent entries for gap detection
   - Issue entries (type: issue) — last 30 days for recurrence patterns
   - Pre-op entries (type: preop) — recent entries for pattern detection
-- **Asset state.md files:** Per-asset operational state (last_seen, status, last_fuel_ts, last_preop_ts)
+- **Asset AGENTS.md (State):** Per-asset operational state (last_seen, status, last_fuel_ts, last_preop_ts)
 - **MEMORY.md:** Recent Alerts Sent section (to avoid re-alerting for the same issue within 24 hours)
 
 ## Behavior
@@ -35,7 +35,7 @@ On each heartbeat, iterate over active assets from the Active section of fleet.m
 
 **Meter gap.** Read the 2 most recent meter entries from the asset's outbox/ (type: meter). If the most recent reading jumped more than 500 hours (or equivalent distance units) from the previous reading in a single report, flag it as a data quality concern. This usually means a reading was missed or entered incorrectly.
 
-**Activity gap.** Read the asset's state.md for the `last_seen` field. If an asset is listed as Active in fleet.md but hasn't had any operator interaction in over 48 hours, flag it. The machine might actually be idle and should be reclassified, or the operator is using the machine without interacting with the agent.
+**Activity gap.** Read the `## State` section in the asset's AGENTS.md for the `last_seen` field. If an asset is listed as Active in fleet.md but hasn't had any operator interaction in over 48 hours, flag it. The machine might actually be idle and should be reclassified, or the operator is using the machine without interacting with the agent.
 
 **Issue recurrence.** Read the asset's outbox/ for issue files (type: issue) from the last 30 days (filter by timestamp in filename). Group entries by the `category` field. If the same category appears 3 or more times in 30 days, flag it as a recurring issue. This suggests the root cause hasn't been addressed — patching symptoms instead of fixing the problem.
 

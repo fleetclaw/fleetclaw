@@ -138,7 +138,7 @@ fleetclaw/
 |----------|-------------|
 | [`AGENTS.md`](AGENTS.md) | Entry point for coding agents -- setup flow and architecture overview |
 | [`docs/architecture.md`](docs/architecture.md) | System design -- agents, data flow, communication, permissions |
-| [`docs/communication.md`](docs/communication.md) | Filesystem message protocol -- inbox/outbox format, state.md, fleet.md |
+| [`docs/communication.md`](docs/communication.md) | Filesystem message protocol -- inbox/outbox format, fleet.md |
 | [`docs/permissions.md`](docs/permissions.md) | POSIX ACL permission model for multi-agent filesystem access |
 | [`docs/implementation.md`](docs/implementation.md) | How to set up agents -- OpenClaw install, FleetClaw injection, services |
 | [`docs/skill-authoring.md`](docs/skill-authoring.md) | How to write skills -- philosophy, conventions, complete examples |

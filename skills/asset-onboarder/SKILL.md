@@ -47,7 +47,7 @@ Once validated, the following steps bring the new asset agent online. Reference 
    - Mount or copy the appropriate skills (fuel-logger, meter-reader, pre-op, issue-reporter, nudger, memory-curator-asset)
    - Tune `openclaw.json` `agents.defaults`: `bootstrapMaxChars: 15000`, heartbeat interval
 
-5. **Set file permissions** using the platform's ACL mechanism. The asset agent user needs read/write on its own workspace. Clawvisor needs read access to this agent's outbox/ and state.md, and write access to its inbox/. See `docs/permissions.md` for the specific ACL rules.
+5. **Set file permissions** using the platform's ACL mechanism. The asset agent user needs read/write on its own workspace. Clawvisor needs read access to this agent's outbox/ and AGENTS.md, and write access to its inbox/. See `docs/permissions.md` for the specific ACL rules.
 
 6. **Create and start the agent service** using the platform's service manager. The service runs OpenClaw as the asset agent's system user.
 
@@ -62,7 +62,7 @@ Respond with the full details of what was created: asset ID, serial, that the ag
 ## Output
 
 - **fleet.md updates:** Add the new asset ID to the Active section.
-- **state.md:** Initialize the new asset's state.md with `status: active`.
+- **AGENTS.md (State):** Add a `## State` section to the new asset's AGENTS.md with `status: active`.
 - **Process management:** Create and start the agent service.
 - **MEMORY.md updates:** Add to Recent Actions (date, asset ID, serial). Update Fleet Composition counts.
 - **Messages to user:** Confirmation with asset details, service status, and messaging channel configuration reminder.

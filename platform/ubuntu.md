@@ -264,6 +264,70 @@ echo "fs.inotify.max_user_watches=524288" >> /etc/sysctl.conf
 sysctl -p
 ```
 
+## Outbox archival
+
+A nightly cron job archives outbox files older than 30 days and compresses month directories older than 90 days. See `docs/scheduling.md` for the archival model.
+
+### Install the cron job
+
+Add to root's crontab (`sudo crontab -e`):
+
+```cron
+0 2 * * * /opt/fleetclaw/scripts/archive-outboxes.sh
+```
+
+### Create the archival script
+
+```bash
+mkdir -p /opt/fleetclaw/scripts
+cat > /opt/fleetclaw/scripts/archive-outboxes.sh << 'SCRIPT'
+#!/bin/bash
+# FleetClaw outbox archival — runs nightly via cron
+# Archives outbox files older than RETENTION_DAYS, compresses months older than 90 days
+
+RETENTION_DAYS=${FC_RETENTION_DAYS:-30}
+
+for home in /home/fc-*; do
+  outbox="$home/.openclaw/workspace/outbox"
+  archive="$home/.openclaw/workspace/outbox-archive"
+  [ -d "$outbox" ] || continue
+
+  # Archive files older than retention period (skip .clawvisor-last-read)
+  find "$outbox" -maxdepth 1 -name "*.md" -mtime +$RETENTION_DAYS \
+    ! -name ".clawvisor-last-read" -print0 | while IFS= read -r -d '' file; do
+    month=$(date -r "$file" +%Y-%m)
+    dest="$archive/$month"
+    mkdir -p "$dest"
+    mv "$file" "$dest/"
+  done
+
+  # Compress month directories older than 90 days
+  [ -d "$archive" ] || continue
+  find "$archive" -mindepth 1 -maxdepth 1 -type d -mtime +90 | while read -r dir; do
+    tarfile="$archive/$(basename "$dir").tar.gz"
+    [ -f "$tarfile" ] && continue
+    tar czf "$tarfile" -C "$archive" "$(basename "$dir")" && rm -rf "$dir"
+  done
+done
+SCRIPT
+
+chmod +x /opt/fleetclaw/scripts/archive-outboxes.sh
+```
+
+The script iterates over all `/home/fc-*` agent home directories. To override the 30-day default, set `FC_RETENTION_DAYS` in the crontab:
+
+```cron
+0 2 * * * FC_RETENTION_DAYS=7 /opt/fleetclaw/scripts/archive-outboxes.sh
+```
+
+### Verify
+
+```bash
+# Dry run — list files that would be archived (without moving them)
+find /home/fc-*/. -path "*/.openclaw/workspace/outbox/*.md" -mtime +30 \
+  ! -name ".clawvisor-last-read"
+```
+
 ## Host sizing
 
 | Fleet size | RAM | CPU | Disk |

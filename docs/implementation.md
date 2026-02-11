@@ -20,6 +20,7 @@ Setting up a FleetClaw deployment involves:
 5. Create and start system services
 6. Configure fleet.md
 7. Set up messaging channel connections
+8. Set up outbox archival cron job
 
 ## SOUL.md and OpenClaw workspaces
 
@@ -390,6 +391,16 @@ Each heartbeat is a full agent turn (~5K-15K input tokens). Budget at scale:
 
 `activeHours` reduces daily heartbeat counts — a 06:00-20:00 window cuts asset heartbeats from ~48/day to ~28/day per agent. Heartbeat interval is the primary cost control lever — set longer intervals for agents that don't need frequent checks. Plus Clawvisor and Clawordinator heartbeats, plus operator-initiated conversations.
 
+## Outbox archival
+
+Outbox files grow indefinitely without cleanup. Set up a nightly OS cron job to archive files older than the retention period (default: 30 days) to `outbox-archive/YYYY-MM/` in each agent's workspace. Month directories older than 90 days are compressed.
+
+This is an OS-level cron job, not an OpenClaw cron job — no LLM reasoning needed for file cleanup. See `docs/scheduling.md` for the archival model and the platform docs for OS-specific commands:
+
+- `platform/ubuntu.md` — crontab + bash
+- `platform/macos.md` — crontab + bash
+- `platform/windows.md` — Task Scheduler + PowerShell
+
 ## Operational considerations
 
 ### Secrets management
@@ -458,4 +469,5 @@ For a new fleet deployment:
 - [ ] Create env files with secrets
 - [ ] Create and enable system services
 - [ ] Start all services
+- [ ] Set up outbox archival cron job (see platform docs)
 - [ ] Verify agents respond to messaging channels

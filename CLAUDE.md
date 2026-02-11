@@ -40,6 +40,7 @@ Agents communicate through **filesystem inbox/outbox directories** containing ti
 
 Key files per agent:
 - `outbox/` -- Files the agent writes to share data
+- `outbox-archive/` -- Archived outbox files (managed by OS cron job, not agents)
 - `inbox/` -- Files other agents write to send messages
 - `state.md` -- Current operational state (flat key-value)
 - `fleet.md` -- Shared fleet registry (owned by Clawordinator, readable by Clawvisor)
@@ -59,6 +60,8 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 - Heartbeat defaults: asset 30m, clawvisor 2h, clawordinator 4h
 - `activeHours` restricts heartbeats to operational hours (e.g., 06:00-20:00)
 - HEARTBEAT.md must have real content or heartbeat ticks are skipped
+- Outbox archival: 30-day default retention, OS cron job (not OpenClaw cron). Canonical reference: `docs/scheduling.md`
+- `.clawvisor-last-read` marker file must never be archived or deleted
 
 ## When Editing Skills
 

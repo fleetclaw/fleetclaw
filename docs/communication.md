@@ -15,11 +15,12 @@ These directories replace centralized data stores. Each file is a self-contained
 
 ```
 ~/.openclaw/workspace/
-├── inbox/          # Messages TO this agent
-├── outbox/         # Messages FROM this agent
-├── state.md        # Agent's current operational state
-├── SOUL.md         # Agent identity
-└── MEMORY.md       # Curated working memory
+├── inbox/              # Messages TO this agent
+├── outbox/             # Messages FROM this agent
+├── outbox-archive/     # Archived outbox files (YYYY-MM/ subdirectories)
+├── state.md            # Agent's current operational state
+├── SOUL.md             # Agent identity
+└── MEMORY.md           # Curated working memory
 ```
 
 ## Message format
@@ -112,9 +113,9 @@ If the marker file doesn't exist, Clawvisor processes all files in the outbox.
 
 1. **New** — Agent writes the file to its outbox
 2. **Processed** — Clawvisor (or another reader) has read it; marker updated past its timestamp
-3. **Archived** — Optionally moved to `outbox-archive/` after a retention period, or deleted
+3. **Archived** — A nightly OS cron job moves files older than the retention period (default: 30 days) to `outbox-archive/YYYY-MM/`. Month directories older than 90 days are compressed.
 
-Skills should not assume infinite outbox growth. A maintenance script or the memory-curator skill can handle archival — moving files older than a configured retention period (e.g., 30 days) to `outbox-archive/` or deleting them.
+The `.clawvisor-last-read` marker file is never archived — it must remain in `outbox/` for read tracking. See `docs/scheduling.md` for the archival model.
 
 ### Inbox files
 
@@ -203,4 +204,4 @@ For developers familiar with the previous Redis-based architecture:
 | Index SET (`SADD`/`SMEMBERS`) | fleet.md sections (Active/Idle/Decommissioned) |
 | Consumer group read position | `.clawvisor-last-read` marker file |
 | `XREVRANGE COUNT 10` | Read 10 most recent outbox files (sort by filename) |
-| `MAXLEN` trimming | Archival/deletion after retention period |
+| `MAXLEN` trimming | Nightly archival cron job (see `docs/scheduling.md`) |

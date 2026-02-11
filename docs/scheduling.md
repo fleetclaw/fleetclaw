@@ -91,6 +91,50 @@ Manual job creation via `openclaw cron add` CLI bypasses the tool deny list. See
 
 They are complementary, not alternatives. Best practice: heartbeat for routine awareness, cron for precise schedules.
 
+## Outbox archival (OS cron job)
+
+### Why
+
+Every fuel log, meter reading, pre-op, and issue report is an outbox file that never gets cleaned up on its own. A single asset can produce 10+ files per shift, so disk usage grows without bound.
+
+### What it does
+
+A nightly OS cron job archives in two phases:
+
+1. **Archive** — Moves outbox files older than the retention period (default: 30 days) from `outbox/` to `outbox-archive/YYYY-MM/`
+2. **Compress** — Compresses `outbox-archive/` month directories older than 90 days into `.tar.gz` archives (Linux/macOS) or `.zip` archives (Windows)
+
+The `.clawvisor-last-read` marker file is always excluded — it must remain in `outbox/` for Clawvisor's read tracking. See `docs/communication.md` for the marker file protocol.
+
+### Default retention: 30 days
+
+The 30-day default matches the `anomaly-detector` skill, which scans 30 days of issue-type outbox files for recurrence patterns. Shorter retention breaks anomaly detection — only shorten it if your deployment doesn't use that skill.
+
+| Retention | Use case | Trade-off |
+|-----------|----------|-----------|
+| 7 days | Small fleets, limited storage | Breaks anomaly-detector recurrence scanning |
+| 30 days | Default | Covers anomaly detection + monthly reporting |
+| 90+ days | Compliance-heavy organizations | Higher disk usage, full audit trail |
+
+### Why OS cron, not OpenClaw cron
+
+This is an OS-level cron job (crontab on Linux/macOS, Task Scheduler on Windows), not an OpenClaw cron job. Reasons:
+
+- **No LLM reasoning needed** — archival is a deterministic file operation
+- **Runs as root** — needs filesystem write access across agent home directories
+- **Exact timing** — runs once nightly at a fixed time, not on a heartbeat interval
+- **No API cost** — no LLM call for a simple file operation
+
+OpenClaw cron is for tasks that need agent reasoning. OS cron is for deterministic filesystem tasks.
+
+### Setup
+
+See the platform docs for OS-specific crontab entries, scripts, and Task Scheduler commands:
+
+- `platform/ubuntu.md` — crontab + bash
+- `platform/macos.md` — crontab + bash
+- `platform/windows.md` — Task Scheduler + PowerShell
+
 ## Skills — not scheduled
 
 Skills are instructional markdown loaded on demand. They have no scheduling component — skills are triggered by messages, heartbeat prompts, or cron events. The heartbeat prompt causes the agent to read HEARTBEAT.md, which references skill behaviors.

@@ -189,6 +189,89 @@ $acl.AddAccessRule($writeRule)
 Set-Acl -Path "C:\FleetClaw\fleet.md" -AclObject $acl
 ```
 
+## Outbox archival
+
+A nightly scheduled task archives outbox files older than 30 days and compresses month directories older than 90 days. See `docs/scheduling.md` for the archival model.
+
+### Create the archival script
+
+Save as `C:\FleetClaw\scripts\Archive-Outboxes.ps1`:
+
+```powershell
+# FleetClaw outbox archival — runs nightly via Task Scheduler
+# Archives outbox files older than RetentionDays, compresses months older than 90 days
+
+param(
+    [int]$RetentionDays = 30
+)
+
+$cutoff = (Get-Date).AddDays(-$RetentionDays)
+$compressCutoff = (Get-Date).AddDays(-90)
+
+Get-ChildItem "C:\FleetClaw\agents" -Directory | ForEach-Object {
+    $outbox = Join-Path $_.FullName ".openclaw\workspace\outbox"
+    $archive = Join-Path $_.FullName ".openclaw\workspace\outbox-archive"
+    if (-not (Test-Path $outbox)) { return }
+
+    # Archive files older than retention period (skip .clawvisor-last-read)
+    Get-ChildItem $outbox -Filter "*.md" -File | Where-Object {
+        $_.LastWriteTime -lt $cutoff -and $_.Name -ne ".clawvisor-last-read"
+    } | ForEach-Object {
+        $month = $_.LastWriteTime.ToString("yyyy-MM")
+        $dest = Join-Path $archive $month
+        if (-not (Test-Path $dest)) { New-Item -Path $dest -ItemType Directory -Force | Out-Null }
+        Move-Item $_.FullName -Destination $dest
+    }
+
+    # Compress month directories older than 90 days
+    if (-not (Test-Path $archive)) { return }
+    Get-ChildItem $archive -Directory | Where-Object {
+        $_.LastWriteTime -lt $compressCutoff
+    } | ForEach-Object {
+        $zipFile = Join-Path $archive "$($_.Name).zip"
+        if (Test-Path $zipFile) { return }
+        Compress-Archive -Path $_.FullName -DestinationPath $zipFile
+        Remove-Item $_.FullName -Recurse -Force
+    }
+}
+```
+
+### Register the scheduled task
+
+```powershell
+$action = New-ScheduledTaskAction `
+    -Execute "powershell.exe" `
+    -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\FleetClaw\scripts\Archive-Outboxes.ps1"
+$trigger = New-ScheduledTaskTrigger -Daily -At "2:00AM"
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable
+
+Register-ScheduledTask `
+    -TaskName "FleetClaw-OutboxArchival" `
+    -Action $action `
+    -Trigger $trigger `
+    -Settings $settings `
+    -User "SYSTEM" `
+    -RunLevel Highest `
+    -Description "Archive FleetClaw outbox files older than 30 days"
+```
+
+To override the 30-day default, change the `-Argument` to include `-RetentionDays 7`:
+
+```powershell
+-Argument "-NoProfile -ExecutionPolicy Bypass -File C:\FleetClaw\scripts\Archive-Outboxes.ps1 -RetentionDays 7"
+```
+
+### Verify
+
+```powershell
+# Check that the task is registered
+Get-ScheduledTask -TaskName "FleetClaw-OutboxArchival"
+
+# Dry run — list files that would be archived (without moving them)
+Get-ChildItem "C:\FleetClaw\agents\*\.openclaw\workspace\outbox\*.md" |
+    Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) -and $_.Name -ne ".clawvisor-last-read" }
+```
+
 ## Notes
 
 - Windows Defender may flag OpenClaw's file-watching behavior. Add `C:\FleetClaw\` to exclusions if needed.

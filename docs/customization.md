@@ -149,13 +149,15 @@ Not built into Tier 1. For Tier 2, consider:
 
 ## Outbox retention
 
-Outbox files accumulate over time. Configure a retention policy:
+A nightly OS cron job archives outbox files past the retention period. The default is **30 days**. Adjust based on your needs:
 
-- **Short retention (7 days)** — Suitable for small fleets where storage is limited
-- **Medium retention (30 days)** — Default recommendation. Covers monthly reporting periods.
-- **Long retention (90+ days)** — For compliance-heavy organizations that need audit trails
+- **Short retention (7 days)** — Small fleets with limited storage. Breaks the `anomaly-detector` skill, which scans 30 days of issue files for recurrence patterns.
+- **Medium retention (30 days)** — Default. Covers anomaly detection and monthly reporting.
+- **Long retention (90+ days)** — Compliance-heavy organizations that need audit trails.
 
-Implement retention via a cron job that archives or deletes outbox files older than the retention period. The memory-curator skills keep MEMORY.md current regardless of outbox retention.
+Archiving old outbox files does not affect the agent's working memory — memory-curator skills keep MEMORY.md current independently.
+
+See `docs/scheduling.md` for the archival model (phases, retention tiers, why OS cron) and platform docs for setup commands.
 
 ## Tier 2 integrations
 

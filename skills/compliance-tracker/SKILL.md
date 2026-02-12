@@ -44,7 +44,7 @@ Every 2 hours, scan the fleet for compliance gaps:
 
 When a supervisor, foreman, or manager asks about compliance:
 
-1. Pull fresh data from asset AGENTS.md files (the `## State` section), not just MEMORY.md. Compliance questions deserve current numbers.
+1. Pull fresh data from the `## State` section in each asset's AGENTS.md, not just MEMORY.md. Compliance questions deserve current numbers.
 2. Answer the specific question asked:
    - "Who hasn't done pre-ops?" — List the non-compliant assets with their operators and how long ago their last pre-op was.
    - "Compliance this week?" — Provide percentages for all three categories with trend direction.

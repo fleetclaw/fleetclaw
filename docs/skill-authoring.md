@@ -204,7 +204,7 @@ Colons replaced with hyphens: `2026-02-09T06-12-00_fuel.md`
 |------|---------|
 | `outbox/` | Agent writes its own data here |
 | `inbox/` | Other agents write messages here |
-| AGENTS.md `## State` | Agent's current operational state (flat key-value, always in context) |
+| `AGENTS.md` `## State` | Agent's current operational state (flat key-value, always in context) |
 | `fleet.md` | Fleet composition registry (read-only for most agents) |
 | `MEMORY.md` | Agent's curated working memory |
 

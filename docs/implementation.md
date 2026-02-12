@@ -100,7 +100,7 @@ mkdir -p ~/.openclaw/workspace/outbox
 
 ### 3. Add `## State` to AGENTS.md (asset agents only)
 
-Append an initial `## State` section to the bottom of the asset agent's `~/.openclaw/workspace/AGENTS.md`:
+Append an initial `## State` section to the asset agent's `~/.openclaw/workspace/AGENTS.md`:
 
 ```markdown
 ## State
@@ -260,7 +260,7 @@ Clawordinator updates fleet.md via its skills (asset-onboarder, asset-lifecycle)
 
 ## AGENTS.md `## State` format
 
-Each asset agent maintains a `## State` section at the bottom of its AGENTS.md with flat key-value pairs:
+Each asset agent maintains a `## State` section in its AGENTS.md with flat key-value pairs:
 
 ```markdown
 ## State
@@ -415,7 +415,7 @@ Env files contain sensitive credentials (messaging tokens, API keys). For produc
 - Service status: `systemctl status fc-agent-*` (Linux)
 - Logs: `journalctl -u fc-agent-ex001 -f` (Linux)
 - Outbox file counts: quick indicator of agent activity
-- `## State` timestamps: detect stale agents
+- `## State` timestamps in AGENTS.md: detect stale agents
 
 ### Log management
 

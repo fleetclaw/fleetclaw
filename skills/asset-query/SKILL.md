@@ -16,7 +16,7 @@ _Answer detailed questions about any specific asset — fuel history, issues, ma
 
 - **User messages:** Asset-specific questions from mechanics, foremen, supervisors, managers
 - **fleet.md:** Fleet composition — Active, Idle, and Decommissioned asset lists (to verify asset exists and check lifecycle state)
-- **Asset AGENTS.md (State):** The target asset's `## State` section (all fields: status, operator, last_seen, last_fuel_ts, last_preop_ts, last_meter_ts, etc.)
+- **Asset AGENTS.md (State):** All fields (status, operator, last_seen, last_fuel_ts, last_preop_ts, last_meter_ts, etc.)
 - **Asset outbox files:** The target asset's outbox/ directory containing entries of all types:
   - Fuel entries (type: fuel) — fuel log history
   - Meter entries (type: meter) — meter reading history

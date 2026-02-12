@@ -45,7 +45,7 @@ Present comparisons in context. "EX-001 burned 18% more fuel than the fleet aver
 
 ### Compliance analysis
 
-Read `## State` sections in AGENTS.md files across active assets (from fleet.md). Check last_preop_ts, last_fuel_ts, and last_meter_ts fields. Calculate:
+Read the `## State` section in each active asset's AGENTS.md (from fleet.md). Check last_preop_ts, last_fuel_ts, and last_meter_ts fields. Calculate:
 - Percentage of assets with a pre-op in the last 24 hours
 - Percentage of assets with a fuel log in the last 24 hours
 - Percentage of assets with a meter reading in the last 7 days

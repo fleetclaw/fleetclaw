@@ -42,7 +42,7 @@ Key files per agent:
 - `outbox/` -- Files the agent writes to share data
 - `outbox-archive/` -- Archived outbox files (managed by OS cron job, not agents)
 - `inbox/` -- Files other agents write to send messages
-- `AGENTS.md ## State` -- Current operational state (flat key-value, always in context)
+- `AGENTS.md` `## State` -- Current operational state (flat key-value, always in context)
 - `fleet.md` -- Shared fleet registry (owned by Clawordinator, readable by Clawvisor)
 - `MEMORY.md` -- Curated working memory
 
@@ -69,6 +69,8 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 - YAML frontmatter defines machine-readable contract (name, description, bins, env requirements)
 - `## Behavior` stays freeform -- existing Tier 1 skills are the style guide
 - Skills reference filesystem operations: inbox files, outbox files, AGENTS.md `## State`, fleet.md, MEMORY.md
+- Skill input label for state: `**AGENTS.md (State):** {keys}` -- output label: `**AGENTS.md (State) updates:** {desc}`
+- Cross-agent state reads (Clawvisor/Clawordinator skills): `**Asset AGENTS.md (State):** {desc}` for input, "the `## State` section in the asset's AGENTS.md" in behavior prose
 - Skills should be channel-agnostic -- don't assume a specific messaging platform
 - Skills should be platform-agnostic -- use generic phrasing like "stop the agent service" rather than OS-specific commands. Platform docs provide the specifics.
 - Overdue Condition format: `[what's missing] after [time threshold] since [reference event]`

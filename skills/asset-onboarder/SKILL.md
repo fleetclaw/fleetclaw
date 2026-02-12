@@ -62,7 +62,7 @@ Respond with the full details of what was created: asset ID, serial, that the ag
 ## Output
 
 - **fleet.md updates:** Add the new asset ID to the Active section.
-- **AGENTS.md (State):** Add a `## State` section to the new asset's AGENTS.md with `status: active`.
+- **AGENTS.md (State):** Add a `## State` section with `status: active` to the new asset's AGENTS.md.
 - **Process management:** Create and start the agent service.
 - **MEMORY.md updates:** Add to Recent Actions (date, asset ID, serial). Update Fleet Composition counts.
 - **Messages to user:** Confirmation with asset details, service status, and messaging channel configuration reminder.

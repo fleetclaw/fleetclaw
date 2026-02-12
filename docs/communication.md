@@ -15,6 +15,7 @@ These directories replace centralized data stores. Each file is a self-contained
 
 ```
 ~/.openclaw/workspace/
+├── AGENTS.md           # Auto-loaded by OpenClaw; asset agents add ## State
 ├── inbox/              # Messages TO this agent
 ├── outbox/             # Messages FROM this agent
 ├── outbox-archive/     # Archived outbox files (YYYY-MM/ subdirectories)
@@ -72,7 +73,7 @@ Files sort chronologically by default. The combination of timestamp + type makes
 
 - Write to their own `outbox/` — fuel logs, meter readings, pre-ops, issue reports
 - Read their own `inbox/` — maintenance acknowledgments, directives
-- Update their own `## State` section in AGENTS.md — current operational state
+- Update `## State` in their own AGENTS.md — current operational state
 
 ### Clawvisor
 
@@ -171,7 +172,7 @@ Updated by: clawordinator
 
 ## Per-agent operational state (AGENTS.md)
 
-Each asset agent maintains a `## State` section at the bottom of its AGENTS.md with current operational data. Because OpenClaw auto-loads AGENTS.md into every session, the agent always has its operational state in context — no separate file read needed.
+Each asset agent maintains a `## State` section in its AGENTS.md with current operational data. Because OpenClaw auto-loads AGENTS.md into every session, the agent always has its operational state in context — no separate file read needed.
 
 ```markdown
 ## State
@@ -189,7 +190,7 @@ last_preop_status: pass
 open_issues: 1
 ```
 
-Fields are flat key-value pairs, one per line. Skills read and update individual fields. The agent's skills update `## State` directly — other agents read it but do not write to it. Clawvisor reads asset AGENTS.md files for the `## State` section.
+Fields are flat key-value pairs, one per line. The agent's own skills read and update individual fields. Other agents read `## State` but never write to it — Clawvisor reads asset AGENTS.md files for the `## State` section; it does not modify them.
 
 ## Comparison to Redis
 

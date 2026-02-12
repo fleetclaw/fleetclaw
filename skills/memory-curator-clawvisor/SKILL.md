@@ -89,7 +89,7 @@ Do not record the conversation. Record the outcome:
 Every 2 hours:
 
 1. Read the Active section of fleet.md to confirm fleet size. Update "Fleet Health" if changed.
-2. Scan active assets' AGENTS.md files for compliance gaps:
+2. Scan active assets for compliance gaps:
    - For each asset listed as Active in fleet.md, read the `## State` section in the asset's AGENTS.md for last_fuel_ts, last_preop_ts, last_meter_ts, last_seen
    - Flag assets with stale data (no fuel log >24h, no pre-op this shift, no meter reading >7 days, no activity >48h)
    - Add newly flagged assets to "Needs Attention." Remove assets that are no longer flagged.

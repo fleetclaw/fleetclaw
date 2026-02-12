@@ -16,7 +16,7 @@ _Answer questions about current fleet state — what's running, what's down, how
 
 - **User messages:** Questions about fleet state, individual asset status, or fleet-wide counts
 - **fleet.md:** Fleet composition — Active, Idle, and Decommissioned asset lists
-- **Asset state.md files:** Per-asset operational state (status, operator, last_seen, last_fuel_ts, last_preop_ts, last_meter_ts)
+- **Asset AGENTS.md (State):** Per-asset operational state (status, operator, last_seen, last_fuel_ts, last_preop_ts, last_meter_ts)
 - **MEMORY.md:** Fleet Health section for quick overview without reading every asset's state
 
 ## Behavior
@@ -27,7 +27,7 @@ This is Clawvisor's "what's the fleet look like right now?" skill. It answers st
 
 When someone asks "what's running?" or "fleet overview" or "how many machines are up?":
 
-1. Start with the Fleet Health summary from MEMORY.md. This gives a fast, high-level answer without reading every asset's state.md.
+1. Start with the Fleet Health summary from MEMORY.md. This gives a fast, high-level answer without reading every asset's AGENTS.md.
 2. If the user needs current numbers (or if MEMORY.md seems stale), read fleet.md directly:
    - Count assets listed under the Active section
    - Count assets listed under the Idle section
@@ -39,7 +39,7 @@ When someone asks "what's running?" or "fleet overview" or "how many machines ar
 
 When someone asks about a particular asset ("status of EX-001", "what's going on with KOT28?"):
 
-1. Read the asset's state.md for the relevant fields: status, operator, last_seen, last_fuel_ts, last_preop_ts, last_meter_ts.
+1. Read the `## State` section in the asset's AGENTS.md for the relevant fields: status, operator, last_seen, last_fuel_ts, last_preop_ts, last_meter_ts.
 2. Check fleet.md to confirm the asset's lifecycle state (Active, Idle, or Decommissioned).
 3. Check MEMORY.md "Needs Attention" for any flags on this asset.
 4. Present a concise status summary: current state, who's operating it, when it was last active, whether its compliance data is current.
@@ -49,7 +49,7 @@ When someone asks about a particular asset ("status of EX-001", "what's going on
 
 Keep responses crisp and scannable. Foremen and supervisors are busy — they want the answer, not a report. Use short bullet points for multi-asset responses. Lead with the most important information (anything down or flagged), then the routine stuff.
 
-If someone asks a question this skill can't answer from state data alone — like "what issues does EX-001 have?" or "show me fuel history" — that's asset-query territory. Answer what you can from state.md and point to the deeper data if relevant.
+If someone asks a question this skill can't answer from state data alone — like "what issues does EX-001 have?" or "show me fuel history" — that's asset-query territory. Answer what you can from `## State` and point to the deeper data if relevant.
 
 ## Output
 

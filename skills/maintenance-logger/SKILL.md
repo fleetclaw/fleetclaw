@@ -17,7 +17,7 @@ _Accept maintenance reports from mechanics and log completed work, closing the f
 - **User messages:** Natural language maintenance reports from mechanics
 - **Outbox files:** Previous maintenance entries in Clawvisor's own outbox/ (type: maintenance) for context and deduplication
 - **Asset outbox files:** Asset agents' outbox/ directories — entries of type `issue` to cross-reference open issues and check if this maintenance resolves something
-- **Asset state.md files:** Current asset operational state
+- **Asset AGENTS.md (State):** Current asset operational state
 - **MEMORY.md:** Needs Attention section (to check if resolved issues should be cleared), Mechanic Activity section
 
 ## Behavior
@@ -55,7 +55,7 @@ When the operator next interacts with their asset agent, the agent reads the inb
 
 ### Note on asset state
 
-Clawvisor cannot directly update an asset agent's state.md (ACL restriction). The maintenance_ack inbox message tells the asset agent to update its own state on next session. If the mechanic says the machine is back in service, include that status in the maintenance_ack so the asset agent reflects it.
+Clawvisor cannot directly update an asset agent's `## State` section (ACL restriction). The maintenance_ack inbox message tells the asset agent to update its own state on next session. If the mechanic says the machine is back in service, include that status in the maintenance_ack so the asset agent reflects it.
 
 ## Output
 

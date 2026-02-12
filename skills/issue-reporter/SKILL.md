@@ -16,7 +16,7 @@ _Let operators report machine problems in their own words. Categorize, log, and 
 
 - **User messages:** Plain language issue descriptions
 - **Outbox files:** Previous issue entries in outbox/ (type: issue) for deduplication and pattern awareness
-- **state.md:** `open_issues` count
+- **AGENTS.md (State):** `open_issues` count
 - **MEMORY.md:** Open Items (existing unresolved issues), Recent Context (maintenance history that might relate)
 
 ## Behavior
@@ -102,6 +102,6 @@ Add the issue to MEMORY.md Open Items so it persists across sessions until resol
   operational: {yes|no}
   reporter: {OPERATOR_NAME}
   ```
-- **state.md updates:** Update `open_issues` count.
+- **AGENTS.md (State) updates:** Update `open_issues` count.
 - **MEMORY.md updates:** Add new issue to Open Items section with description, category, and date. If the issue resolves a question from a previous pre-op flag, note the connection.
 - **Messages to user:** Brief acknowledgment confirming the issue was logged. If safety-critical, include the escalation note.

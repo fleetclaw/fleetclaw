@@ -16,7 +16,7 @@ _Answer detailed questions about any specific asset — fuel history, issues, ma
 
 - **User messages:** Asset-specific questions from mechanics, foremen, supervisors, managers
 - **fleet.md:** Fleet composition — Active, Idle, and Decommissioned asset lists (to verify asset exists and check lifecycle state)
-- **Asset state.md:** The target asset's state.md (all fields: status, operator, last_seen, last_fuel_ts, last_preop_ts, last_meter_ts, etc.)
+- **Asset AGENTS.md (State):** All fields (status, operator, last_seen, last_fuel_ts, last_preop_ts, last_meter_ts, etc.)
 - **Asset outbox files:** The target asset's outbox/ directory containing entries of all types:
   - Fuel entries (type: fuel) — fuel log history
   - Meter entries (type: meter) — meter reading history
@@ -42,7 +42,7 @@ Match the user's question to the appropriate data source and query accordingly:
 
 **Last fueled / fuel history.** Read the most recent fuel files from the asset's outbox/ (type: fuel, sorted by timestamp in filename). "When was EX-001 last fueled?" needs the 1 most recent file. "Last 5 fuel logs for EX-001" needs the 5 most recent. Include the amount, burn rate, and timestamp for each entry.
 
-**Current state.** Read the asset's state.md for the relevant fields. "Is EX-001 active?" needs just status. "Who's operating KOT28?" needs operator and last_seen.
+**Current state.** Read the `## State` section in the asset's AGENTS.md for the relevant fields. "Is EX-001 active?" needs just status. "Who's operating KOT28?" needs operator and last_seen.
 
 **Issues.** Read issue files from the asset's outbox/ (type: issue, sorted by timestamp). "What issues does KOT28 have?" returns recent issues with their description, category, severity, and whether the machine was still operational. If the user asks about open/unresolved issues, cross-reference against Clawvisor's outbox/ for maintenance entries (type: maintenance) matching the same asset — issues with matching maintenance entries after them are likely resolved.
 

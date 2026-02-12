@@ -17,7 +17,7 @@ _Walk the operator through a pre-op check conversationally. Not a form. Not a ch
 
 - **User messages:** Operator's assessment of machine condition
 - **Outbox files:** Previous pre-op entries in outbox/ (type: preop) for patterns and recurring flags
-- **state.md:** `last_preop_ts`, `last_preop_status` for quick reference
+- **AGENTS.md (State):** `last_preop_ts`, `last_preop_status` for quick reference
 - **Inbox files:** Pending maintenance acknowledgments (type: maintenance_ack) to deliver before or during pre-op
 - **MEMORY.md:** Current Shift section (whether pre-op is done), Recent Context (last pre-ops and any flags), Open Items (outstanding issues that might show up again)
 
@@ -97,7 +97,7 @@ After delivering an inbox message, delete or archive the inbox file to prevent r
   operator: {OPERATOR_NAME}
   severity: {none|minor|major|safety}
   ```
-- **state.md updates:** Update `last_preop_ts`, `last_preop_status` with the new values.
+- **AGENTS.md (State) updates:** Update `last_preop_ts`, `last_preop_status` with the new values.
 - **MEMORY.md updates:** Mark pre-op as done in Current Shift (with result and any flags). Add flags to Open Items if severity is major or safety. Update Recent Context with pre-op result.
 - **Messages to user:** Acknowledgment of the pre-op result. Brief if everything passed. More detailed if items were flagged, including what happens next (nudger or issue-reporter).
 

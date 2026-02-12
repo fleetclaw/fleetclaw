@@ -86,9 +86,9 @@ Skills are markdown files that teach agents how to do things. They contain plain
 Every skill follows this pattern:
 
 1. **Trigger** — When does the agent activate this skill? (message, heartbeat via HEARTBEAT.md, session start, inbox message)
-2. **Input** — What data does it consume? (user messages, inbox files, outbox files, state.md, fleet.md, MEMORY.md, .env variables)
+2. **Input** — What data does it consume? (user messages, inbox files, outbox files, AGENTS.md `## State`, fleet.md, MEMORY.md, .env variables)
 3. **Behavior** — Plain English instructions. Not code. Not pseudocode.
-4. **Output** — What does it produce? (outbox writes, inbox writes, state.md updates, fleet.md updates, MEMORY.md updates, messages to user, escalation flags)
+4. **Output** — What does it produce? (outbox writes, inbox writes, AGENTS.md `## State` updates, fleet.md updates, MEMORY.md updates, messages to user, escalation flags)
 5. **Overdue Condition** (optional) — When is something missing that the nudger should catch?
 
 See `skills/SKILL-TEMPLATE.md` for the blank template and `docs/skill-authoring.md` for the comprehensive guide.
@@ -186,7 +186,7 @@ This loop is what makes operators keep reporting issues. They see that reporting
 Each agent runs as its own system user. Filesystem ACLs control what each agent can read and write:
 
 - **Asset agents** — full control of own workspace, read-only access to fleet.md
-- **Clawvisor** — read access to all asset outboxes and state files, write access to asset inboxes and Clawordinator's inbox
+- **Clawvisor** — read access to all asset outboxes and AGENTS.md files, write access to asset inboxes and Clawordinator's inbox
 - **Clawordinator** — write access to any agent inbox, sole writer of fleet.md, scoped sudo for service management
 
 See `docs/permissions.md` for the complete ACL rules, user creation, and auditing commands.
@@ -296,7 +296,7 @@ OpenClaw uses `HEARTBEAT.md` in each agent's workspace to drive heartbeat behavi
 │   Writes:           │              │   Writes:           │
 │   → MEMORY.md       │              │   → MEMORY.md       │
 │   → outbox/ files   │              │   → outbox/ files   │
-│   → state.md        │              │   → state.md        │
+│   → ## State        │              │   → ## State        │
 └─────────┬───────────┘              └─────────┬───────────┘
           │                                    │
           │  Clawvisor reads outbox/ dirs      │

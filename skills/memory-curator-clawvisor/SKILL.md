@@ -6,7 +6,7 @@ metadata: {"openclaw":{"requires":{"bins":[],"env":[]}}}
 
 # Memory Curator (Clawvisor)
 
-_Clawvisor's MEMORY.md is an exception report, not an inventory. Only problems and patterns make it into memory. Everything normal lives in asset outbox files and state.md._
+_Clawvisor's MEMORY.md is an exception report, not an inventory. Only problems and patterns make it into memory. Everything normal lives in asset outbox files and AGENTS.md._
 
 ## Trigger
 
@@ -17,7 +17,7 @@ _Clawvisor's MEMORY.md is an exception report, not an inventory. Only problems a
 
 - **MEMORY.md:** Current contents (read before updating)
 - **fleet.md:** Current fleet composition (active, idle, decommissioned asset lists)
-- **Asset state.md files:** Per-asset operational state (compliance timestamps, operator, status)
+- **Asset AGENTS.md (State):** Per-asset operational state (compliance timestamps, operator, status)
 - **Asset outbox files:** Per-asset outbox/ directories for recent activity data
 - **Clawvisor outbox files:** Clawvisor's own outbox/ entries — type `alert` (recent anomaly alerts), type `escalation` (escalation records), type `maintenance` (recent maintenance events)
 - **Clawvisor inbox files:** Incoming messages (escalation resolutions from Clawordinator)
@@ -31,7 +31,7 @@ Clawvisor oversees the entire fleet. With 64+ assets, MEMORY.md cannot hold per-
 - **Compliance trends** — improving or declining, not raw numbers
 - **Active escalations** — the 2-3 currently open, with context
 
-If a mechanic asks "what's going on with KOE57?" and KOE57 is healthy, Clawvisor won't find it in MEMORY.md — and that's correct. It reads KOE57's state.md and outbox files. MEMORY.md only contains assets that are exceptional.
+If a mechanic asks "what's going on with KOE57?" and KOE57 is healthy, Clawvisor won't find it in MEMORY.md — and that's correct. It reads the `## State` section in KOE57's AGENTS.md and its outbox files. MEMORY.md only contains assets that are exceptional.
 
 ### Structure
 
@@ -89,8 +89,8 @@ Do not record the conversation. Record the outcome:
 Every 2 hours:
 
 1. Read the Active section of fleet.md to confirm fleet size. Update "Fleet Health" if changed.
-2. Scan active assets' state.md files for compliance gaps:
-   - For each asset listed as Active in fleet.md, read the asset's state.md for last_fuel_ts, last_preop_ts, last_meter_ts, last_seen
+2. Scan active assets for compliance gaps:
+   - For each asset listed as Active in fleet.md, read the `## State` section in the asset's AGENTS.md for last_fuel_ts, last_preop_ts, last_meter_ts, last_seen
    - Flag assets with stale data (no fuel log >24h, no pre-op this shift, no meter reading >7 days, no activity >48h)
    - Add newly flagged assets to "Needs Attention." Remove assets that are no longer flagged.
 3. Check Clawvisor's outbox/ for recent escalation files (type: escalation) since last heartbeat. Add to "Active Escalations."

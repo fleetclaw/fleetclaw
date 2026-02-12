@@ -98,17 +98,17 @@ mkdir -p ~/.openclaw/workspace/inbox
 mkdir -p ~/.openclaw/workspace/outbox
 ```
 
-### 3. Create state.md (asset agents only)
+### 3. Add `## State` to AGENTS.md (asset agents only)
 
-Create an initial `~/.openclaw/workspace/state.md`:
+Append an initial `## State` section to the asset agent's `~/.openclaw/workspace/AGENTS.md`:
 
 ```markdown
-# State
+## State
 
 status: active
 ```
 
-Skills will populate additional fields during operation.
+Skills will populate additional fields during operation. Because OpenClaw auto-loads AGENTS.md into every session, the agent always has its operational state in context.
 
 ### 4. Populate HEARTBEAT.md
 
@@ -258,12 +258,12 @@ Updated by: clawordinator
 
 Clawordinator updates fleet.md via its skills (asset-onboarder, asset-lifecycle). All agents read it for fleet composition awareness.
 
-## state.md format
+## AGENTS.md `## State` format
 
-Each asset agent maintains its own state.md with flat key-value pairs:
+Each asset agent maintains a `## State` section in its AGENTS.md with flat key-value pairs:
 
 ```markdown
-# State
+## State
 
 status: active
 operator: Mike
@@ -278,7 +278,7 @@ last_preop_status: pass
 open_issues: 1
 ```
 
-Skills update specific fields. The agent reads state.md at session start for instant context without parsing outbox history.
+Skills update specific fields. Because OpenClaw auto-loads AGENTS.md into every session, the agent always has its operational state in context without parsing outbox history.
 
 ## System service configuration
 
@@ -415,7 +415,7 @@ Env files contain sensitive credentials (messaging tokens, API keys). For produc
 - Service status: `systemctl status fc-agent-*` (Linux)
 - Logs: `journalctl -u fc-agent-ex001 -f` (Linux)
 - Outbox file counts: quick indicator of agent activity
-- state.md timestamps: detect stale agents
+- `## State` timestamps in AGENTS.md: detect stale agents
 
 ### Log management
 
@@ -454,7 +454,7 @@ For a new fleet deployment:
 - [ ] Copy SOUL.md templates with substitutions
 - [ ] Populate HEARTBEAT.md from templates per agent role
 - [ ] Create inbox/outbox directories per agent
-- [ ] Create state.md for asset agents
+- [ ] Add `## State` section to AGENTS.md for asset agents
 - [ ] Install skills to shared directory
 - [ ] Configure skill discovery in openclaw.json
 - [ ] Tune openclaw.json (agents.defaults: heartbeat, bootstrapMaxChars, model)

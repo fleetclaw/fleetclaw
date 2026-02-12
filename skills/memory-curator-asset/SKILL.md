@@ -18,7 +18,7 @@ _Keep MEMORY.md lean and useful. Distill what happened into what matters. Prune 
 - **MEMORY.md:** Current contents (read before updating)
 - **Inbox files:** Pending messages in inbox/ (maintenance acks, directives)
 - **Outbox files:** Recent entries in outbox/ for cross-referencing (e.g., checking if maintenance was logged for an open issue)
-- **state.md:** Current state fields for consistency check
+- **AGENTS.md (State):** Current state fields for consistency check
 
 ## Behavior
 

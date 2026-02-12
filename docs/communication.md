@@ -15,10 +15,10 @@ These directories replace centralized data stores. Each file is a self-contained
 
 ```
 ~/.openclaw/workspace/
+├── AGENTS.md           # Auto-loaded by OpenClaw; asset agents add ## State
 ├── inbox/              # Messages TO this agent
 ├── outbox/             # Messages FROM this agent
 ├── outbox-archive/     # Archived outbox files (YYYY-MM/ subdirectories)
-├── state.md            # Agent's current operational state
 ├── SOUL.md             # Agent identity
 └── MEMORY.md           # Curated working memory
 ```
@@ -73,7 +73,7 @@ Files sort chronologically by default. The combination of timestamp + type makes
 
 - Write to their own `outbox/` — fuel logs, meter readings, pre-ops, issue reports
 - Read their own `inbox/` — maintenance acknowledgments, directives
-- Update their own `state.md` — current operational state
+- Update `## State` in their own AGENTS.md — current operational state
 
 ### Clawvisor
 
@@ -170,12 +170,12 @@ Updated by: clawordinator
 | EX-003 | CAT0330-2015-F2 | fc-ex003 | 2025-12-01 |
 ```
 
-## state.md — Per-agent operational state
+## Per-agent operational state (AGENTS.md)
 
-Each asset agent maintains a `state.md` file in its workspace with current operational data. This replaces the per-asset state hash.
+Each asset agent maintains a `## State` section in its AGENTS.md with current operational data. Because OpenClaw auto-loads AGENTS.md into every session, the agent always has its operational state in context — no separate file read needed.
 
 ```markdown
-# State
+## State
 
 status: active
 operator: Mike
@@ -190,7 +190,7 @@ last_preop_status: pass
 open_issues: 1
 ```
 
-Fields are flat key-value pairs, one per line. Skills read and update individual fields. The agent owns its own state.md — other agents read it but do not write to it (Clawvisor reads asset state.md files; it does not modify them).
+Fields are flat key-value pairs, one per line. The agent's own skills read and update individual fields. Other agents read `## State` but never write to it — Clawvisor reads asset AGENTS.md files for the `## State` section; it does not modify them.
 
 ## Comparison to Redis
 
@@ -200,7 +200,7 @@ For developers familiar with the previous Redis-based architecture:
 |---------------|----------------------|
 | Stream (`XADD`/`XREAD`) | Outbox directory (timestamped files) |
 | Inbox stream | Inbox directory |
-| State HASH (`HSET`/`HGET`) | state.md (flat key-value) |
+| State HASH (`HSET`/`HGET`) | AGENTS.md `## State` (flat key-value) |
 | Index SET (`SADD`/`SMEMBERS`) | fleet.md sections (Active/Idle/Decommissioned) |
 | Consumer group read position | `.clawvisor-last-read` marker file |
 | `XREVRANGE COUNT 10` | Read 10 most recent outbox files (sort by filename) |

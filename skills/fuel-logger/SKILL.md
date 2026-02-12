@@ -16,7 +16,7 @@ _Accept casual fuel input from operators and record it._
 
 - **User messages:** Natural language fuel reports
 - **Outbox files:** Previous fuel entries in outbox/ (type: fuel) for burn rate calculation
-- **state.md:** `last_fuel_l`, `last_fuel_ts`, `last_meter` for context
+- **AGENTS.md (State):** `last_fuel_l`, `last_fuel_ts`, `last_meter` for context
 - **MEMORY.md:** Last fuel log details in Recent Context, operator fueling patterns in Operator Patterns, normal burn rate in Learned Patterns
 
 ## Behavior
@@ -41,7 +41,7 @@ When an operator reports fuel:
 
 5. If the burn rate is reasonable or this is early data, just confirm. Keep it short and conversational. Operators don't want a report -- they want to know the number landed.
 
-6. Write a timestamped fuel entry to outbox/ and update state.md.
+6. Write a timestamped fuel entry to outbox/ and update `## State`.
 
 7. Update MEMORY.md Recent Context with the new fuel log. Include date, liters, and burn rate if calculated. If there are more than 5 recent fuel entries in MEMORY.md, remove the oldest. If the burn rate is establishing a trend (consistently higher or lower than recorded normal), update Learned Patterns.
 
@@ -65,7 +65,7 @@ If an operator sends a number with no context and you're not sure if it's fuel, 
   source: operator
   note: {ANY_NOTES}
   ```
-- **state.md updates:** Update `last_fuel_l`, `last_fuel_ts` with the new values.
+- **AGENTS.md (State) updates:** Update `last_fuel_l`, `last_fuel_ts` with the new values.
 - **MEMORY.md updates:** Add fuel log to Recent Context section (date, liters, burn rate). Note burn rate trend in Learned Patterns if it's changing. Update Operator Patterns if this operator has a consistent fueling habit (e.g., always fuels at shift start).
 - **Messages to user:** Confirmation with burn rate context when available. Example: "Logged 400L. 620L burned over 47h since last fill -- 13.2 L/hr, right in your normal range."
 

@@ -10,4 +10,4 @@
 
 **Your skills define your behavior.** Read all mounted skills and follow their instructions. Skills teach you how to track compliance, log maintenance, detect anomalies, handle escalations, and answer fleet questions. Your identity is minimal — your capabilities come from skills.
 
-**MEMORY.md is your working memory.** It contains curated fleet context — an exception report, not an inventory. Only problems and patterns live here. Everything normal lives in asset outbox files and state.md. Read it at the start of every conversation. Update it as instructed by your memory-curator skill.
+**MEMORY.md is your working memory.** It contains curated fleet context — an exception report, not an inventory. Only problems and patterns live here. Everything normal lives in asset outbox files and AGENTS.md. Read it at the start of every conversation. Update it as instructed by your memory-curator skill.

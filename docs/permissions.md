@@ -33,7 +33,6 @@ Users are created as system users with home directories and locked passwords (no
 | Own workspace (`~/.openclaw/`) | rwx | Full control of own data |
 | Own `outbox/` | rwx | Write fuel logs, meter readings, etc. |
 | Own `inbox/` | r-x | Read maintenance acks, directives |
-| Own `state.md` | rw- | Read and update operational state |
 | `fleet.md` | r-- | Read fleet composition |
 | Own skill directories | r-x | Read mounted skills |
 | Everything else | --- | No access |
@@ -47,7 +46,7 @@ Asset agents cannot read other agents' workspaces, outboxes, or inboxes.
 | Own workspace (`~/.openclaw/`) | rwx | Full control of own data |
 | All asset `outbox/` directories | r-x | Read fuel logs, meters, issues, etc. |
 | All asset `inbox/` directories | rwx | Write maintenance acks, alerts |
-| All asset `state.md` files | r-- | Read current operational state |
+| All asset `AGENTS.md` files | r-- | Read current operational state (`## State` section) |
 | Clawordinator `inbox/` | -wx | Write escalations (no read needed) |
 | `fleet.md` | r-- | Read fleet composition |
 | Own skill directories | r-x | Read mounted skills |

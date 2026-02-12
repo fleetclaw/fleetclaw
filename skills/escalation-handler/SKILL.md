@@ -19,7 +19,7 @@ _Detect and create escalations for unresolved issues, repeated failures, complia
 - **fleet.md:** Active asset list (fleet composition)
 - **Asset outbox files:** Per-asset outbox/ directories — entries of type `issue` (checking age and recurrence) and type `preop` (safety patterns)
 - **Clawvisor outbox files:** Clawvisor's own outbox/ — entries of type `maintenance` (to check whether issues have been resolved), type `alert` (unresolved alerts, especially safety-severity), and type `escalation` (existing escalations, to avoid duplicates)
-- **Asset state.md files:** Per-asset compliance timestamps (last_fuel_ts, last_preop_ts, last_seen, status)
+- **Asset AGENTS.md (State):** Per-asset compliance timestamps (last_fuel_ts, last_preop_ts, last_seen, status)
 - **MEMORY.md:** Active Escalations section (quick check for existing escalations before creating new ones)
 
 ## Behavior
@@ -34,7 +34,7 @@ Every 2 hours, scan for patterns that warrant escalation:
 
 **Repeated failures.** While scanning the issue files, group entries by category. If the same category appears 3 or more times in 30 days for the same asset, escalate as "repeated_failure." The problem keeps coming back — the root cause isn't being addressed.
 
-**Compliance gaps.** For each active asset, read compliance timestamps from the asset's state.md. Calculate a simple compliance score: how many of the three data types (fuel, pre-op, meter) are current within their thresholds. If an asset's compliance rate is below 50% over the last 7 days — meaning it's consistently missing logs across multiple categories — escalate as "compliance_gap."
+**Compliance gaps.** For each active asset, read compliance timestamps from the `## State` section in the asset's AGENTS.md. Calculate a simple compliance score: how many of the three data types (fuel, pre-op, meter) are current within their thresholds. If an asset's compliance rate is below 50% over the last 7 days — meaning it's consistently missing logs across multiple categories — escalate as "compliance_gap."
 
 **Safety concerns.** Check Clawvisor's outbox/ for alert files (type: alert) with severity "critical" that are safety-related (alert_type "preop_pattern" with failed pre-ops, or issues with category "safety"). Safety-severity items get immediate escalation as "safety_concern" regardless of age.
 

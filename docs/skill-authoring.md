@@ -60,7 +60,7 @@ What data does the skill consume? Be specific about filesystem paths:
 ## Input
 - **User messages:** Natural language fuel reports (e.g., "400l", "filled up 400")
 - **Outbox files:** Previous fuel entries in outbox/ (type: fuel) for burn rate calculation
-- **state.md:** last_fuel_l, last_fuel_ts, burn_rate
+- **AGENTS.md (State):** last_fuel_l, last_fuel_ts, burn_rate
 - **MEMORY.md:** Last fuel log details, operator fueling patterns
 ```
 
@@ -81,9 +81,9 @@ When an operator reports fuel:
    "put 400 in at smoko" all mean 400L.
 2. If the amount is ambiguous, ask once. If still unclear, log what you can and note
    the ambiguity.
-3. Check state.md and MEMORY.md for the last fuel log. Calculate burn rate if enough
+3. Check `## State` and MEMORY.md for the last fuel log. Calculate burn rate if enough
    data exists.
-4. Write a timestamped fuel entry to outbox/ and update state.md.
+4. Write a timestamped fuel entry to outbox/ and update `## State`.
 5. Respond with confirmation and burn rate context if available.
 ```
 
@@ -139,7 +139,7 @@ What does the skill produce? Be specific about file formats:
   burn_rate: {RATE}
   status: {normal|high|low}
   ```
-- **state.md updates:** Update last_fuel_l, last_fuel_ts, burn_rate
+- **AGENTS.md (State) updates:** Update last_fuel_l, last_fuel_ts, burn_rate
 - **MEMORY.md updates:** Add fuel log to Recent Context section. Note burn
   rate trend if it's changing.
 - **Messages to user:** Confirmation with burn rate context.
@@ -204,13 +204,13 @@ Colons replaced with hyphens: `2026-02-09T06-12-00_fuel.md`
 |------|---------|
 | `outbox/` | Agent writes its own data here |
 | `inbox/` | Other agents write messages here |
-| `state.md` | Agent's current operational state (flat key-value) |
+| `AGENTS.md` `## State` | Agent's current operational state (flat key-value, always in context) |
 | `fleet.md` | Fleet composition registry (read-only for most agents) |
 | `MEMORY.md` | Agent's curated working memory |
 
 ### Cross-agent access
 
-- **Clawvisor reads** asset agents' `outbox/` directories and `state.md` files
+- **Clawvisor reads** asset agents' `outbox/` directories and `AGENTS.md` files (`## State` section)
 - **Clawvisor writes** to asset agents' `inbox/` directories (maintenance acks, alerts)
 - **Clawvisor writes** to Clawordinator's `inbox/` (escalations)
 - **Clawordinator writes** to any agent's `inbox/` (directives)
@@ -269,7 +269,7 @@ _Accept casual fuel input from operators and record it._
 
 - **User messages:** Natural language fuel reports
 - **Outbox files:** Previous fuel entries in outbox/ (type: fuel) for burn rate
-- **state.md:** last_fuel_l, last_fuel_ts, burn_rate
+- **AGENTS.md (State):** last_fuel_l, last_fuel_ts, burn_rate
 - **MEMORY.md:** Last fuel log, operator fueling patterns
 
 ## Behavior
@@ -285,7 +285,7 @@ When an operator reports fuel:
 2. If the amount is unclear after one follow-up, log what you can with a
    note that the amount is estimated or unknown.
 
-3. Check state.md and MEMORY.md for the previous fuel log. If available,
+3. Check `## State` and MEMORY.md for the previous fuel log. If available,
    calculate:
    - Liters consumed since last fill
    - Hours operated since last fill (from meter readings if available)
@@ -294,7 +294,7 @@ When an operator reports fuel:
 4. Compare burn rate to this asset's recent average (from MEMORY.md patterns).
    If >20% above average, mention it casually — don't alarm, just inform.
 
-5. Write the fuel entry to outbox/ and update state.md.
+5. Write the fuel entry to outbox/ and update `## State`.
 
 6. Update MEMORY.md with the new fuel log. If there are more than 5 recent
    fuel entries in MEMORY.md, remove the oldest.
@@ -314,7 +314,7 @@ When an operator reports fuel:
   burn_rate: {RATE}
   status: {normal|high|low}
 
-- **state.md updates:** Update last_fuel_l, last_fuel_ts, burn_rate
+- **AGENTS.md (State) updates:** Update last_fuel_l, last_fuel_ts, burn_rate
 - **MEMORY.md updates:** Add fuel log to Recent Context section. Note burn
   rate trend if it's changing.
 - **Messages to user:** Confirmation with burn rate context.

@@ -64,6 +64,7 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 - `.clawvisor-last-read` marker file must never be archived or deleted
 - Model vision: include `"image"` in the model's `input` array to enable photo routing to the primary model
 - Photos uploaded via channels are ephemeral (2-min TTL, `~/.openclaw/media/inbound/`) -- only the first photo per message is processed by default
+- Model registry: `~/.openclaw/agents/main/agent/models.json` takes precedence over `openclaw.json` for model definitions -- edit both files and restart the agent after any model config change
 
 ## When Editing Skills
 

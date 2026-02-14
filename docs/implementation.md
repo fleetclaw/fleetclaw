@@ -215,6 +215,8 @@ If the model supports vision, include `"image"` in the `input` array so OpenClaw
 
 The `agents.defaults.models` allowlist is required alongside `model.primary` — without it, the model may resolve on cold start but 404 on subsequent calls. The `models.mode: "merge"` setting is required for custom providers.
 
+**Model registry:** OpenClaw generates a compiled model registry at `~/.openclaw/agents/main/agent/models.json` during onboarding. This registry contains resolved values (actual API keys, not env var references) and takes precedence over `openclaw.json` at runtime. If you change model definitions in `openclaw.json` after onboarding (e.g., adding `"image"` to the `input` array), the registry still holds the old definition. To apply model config changes: edit both `openclaw.json` and `models.json`, then restart the agent service. The agent caches the model reference at startup, so a restart is always required — live edits to either file won't take effect on a running agent.
+
 **Port configuration:** Set `port` at the root level of openclaw.json (not on the CLI). Each agent needs a unique port. OpenClaw's browser extension relay opens at exactly `gateway_port + 3` (browser control at `+2`, relay at `+3`). With sequential ports, agent N's relay collides with agent N+3's gateway. Space ports with gaps of 4+ or use non-sequential assignments.
 
 Omitting `prompt` from the heartbeat config uses the OpenClaw default, which reads HEARTBEAT.md and follows it strictly. If nothing needs attention the agent replies HEARTBEAT_OK (suppressed — no message sent to the operator).

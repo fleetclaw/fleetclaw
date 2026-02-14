@@ -31,7 +31,7 @@ When an operator reports a meter reading:
    - "showing 23,400 km"
    - [Photo of meter display showing 8542]
 
-   If the operator sends a photo of the meter display, read the value from the image. This eliminates transcription errors -- confirm what you see: "I'm reading 8542 hours from the photo, that right?"
+   If the operator sends a photo of the meter display, read the value from the photo. This eliminates transcription errors -- confirm what you see: "I'm reading 8542 hours from the photo, that right?"
 
 2. Determine the meter type. Most heavy equipment uses hour meters. Vehicles and some support equipment use odometers (km or miles). If this asset's previous readings in MEMORY.md are in hours, assume hours. If in km or miles, assume that. If this is the first reading and the type is unclear from context, ask once: "Is that hours or km?"
 

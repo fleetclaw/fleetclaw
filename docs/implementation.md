@@ -189,7 +189,7 @@ Key settings to configure after onboard:
             "id": "accounts/fireworks/models/<model>",
             "name": "Model Name",
             "reasoning": true,
-            "input": ["text"],
+            "input": ["text", "image"],
             "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
             "contextWindow": 131072,
             "maxTokens": 32768
@@ -210,6 +210,8 @@ Key settings to configure after onboard:
 ```
 
 Replace `<model>` with the actual model path (e.g., `accounts/fireworks/models/kimi-k2p5`). Any OpenAI-compatible provider (Together, Groq, Ollama) works the same way — change `baseUrl`, `apiKey`, and model details. Set `cost` values to actual provider pricing for cost tracking; zeros disable tracking. Use `reasoning: true` for models that support chain-of-thought.
+
+If the model supports vision, include `"image"` in the `input` array so OpenClaw routes photos directly to the primary model. If the model is text-only, use `["text"]` — OpenClaw will fall back to `imageModel` if configured. Photos uploaded through messaging channels are saved to `~/.openclaw/media/inbound/` per agent (each agent has its own under its home directory) and auto-deleted after 2 minutes — they're ephemeral staging files, not persistent storage. By default, only the first photo per message is processed; configure `tools.media.image.attachments.mode: "all"` to process multiple.
 
 The `agents.defaults.models` allowlist is required alongside `model.primary` — without it, the model may resolve on cold start but 404 on subsequent calls. The `models.mode: "merge"` setting is required for custom providers.
 

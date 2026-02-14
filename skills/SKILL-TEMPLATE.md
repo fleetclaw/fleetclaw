@@ -23,7 +23,7 @@ _(Delete triggers that don't apply. Most skills use 1-2 triggers.)_
 
 _What data does this skill consume?_
 
-- **User messages:** Natural language from operator/user
+- **User messages:** Natural language from operator/user (may include photos)
 - **Inbox files:** _(describe expected message types and their frontmatter fields)_
 - **Outbox files:** _(for Clawvisor/Clawordinator reading other agents' outboxes)_
 - **AGENTS.md (State):** _(what state fields does this skill need?)_

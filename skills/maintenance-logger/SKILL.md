@@ -26,9 +26,7 @@ This skill is the mechanic's interface to the fleet. When a mechanic finishes a 
 
 ### Accepting a maintenance report
 
-Mechanics may send photos of completed work (new parts installed, repaired components, fluid levels after service). Describe what the photo shows and incorporate relevant details into the maintenance record. Photo evidence strengthens the audit trail.
-
-1. Parse the mechanic's message for key details:
+1. Parse the mechanic's message for key details. Mechanics may send photos of completed work (new parts installed, repaired components, fluid levels after service) -- describe what the photo shows and incorporate relevant details into the record.
    - **Which asset** — the asset ID (EX-001, KOT28, etc.)
    - **What was done** — the action (replaced, repaired, inspected, serviced, adjusted) and the component
    - **How long it took** — duration in hours, if mentioned

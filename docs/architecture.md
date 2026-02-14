@@ -86,7 +86,7 @@ Skills are markdown files that teach agents how to do things. They contain plain
 Every skill follows this pattern:
 
 1. **Trigger** — When does the agent activate this skill? (message, heartbeat via HEARTBEAT.md, session start, inbox message)
-2. **Input** — What data does it consume? (user messages — text and images, inbox files, outbox files, AGENTS.md `## State`, fleet.md, MEMORY.md, .env variables)
+2. **Input** — What data does it consume? (user messages — text and photos, inbox files, outbox files, AGENTS.md `## State`, fleet.md, MEMORY.md, .env variables)
 3. **Behavior** — Plain English instructions. Not code. Not pseudocode.
 4. **Output** — What does it produce? (outbox writes, inbox writes, AGENTS.md `## State` updates, fleet.md updates, MEMORY.md updates, messages to user, escalation flags)
 5. **Overdue Condition** (optional) — When is something missing that the nudger should catch?

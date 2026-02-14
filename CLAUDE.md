@@ -63,6 +63,7 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 - Outbox archival: 30-day default retention, OS cron job (not OpenClaw cron). Canonical reference: `docs/scheduling.md`
 - `.clawvisor-last-read` marker file must never be archived or deleted
 - Model vision: include `"image"` in the model's `input` array to enable photo routing to the primary model
+- Photos uploaded via channels are ephemeral (2-min TTL, `~/.openclaw/media/inbound/`) -- only the first photo per message is processed by default
 
 ## When Editing Skills
 
@@ -71,6 +72,7 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 - `## Behavior` stays freeform -- existing Tier 1 skills are the style guide
 - Skills reference filesystem operations: inbox files, outbox files, AGENTS.md `## State`, fleet.md, MEMORY.md
 - User messages may include photos when the model supports vision
+- Use "photo" in user-facing skill prose, reserve "image" for technical config keys (e.g., `"input": ["text", "image"]`)
 - Skill input label for state: `**AGENTS.md (State):** {keys}` -- output label: `**AGENTS.md (State) updates:** {desc}`
 - Cross-agent state reads (Clawvisor/Clawordinator skills): `**Asset AGENTS.md (State):** {desc}` for input, "the `## State` section in the asset's AGENTS.md" in behavior prose
 - Skills should be channel-agnostic -- don't assume a specific messaging platform

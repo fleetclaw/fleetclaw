@@ -14,7 +14,7 @@ _Let operators report machine problems in their own words. Categorize, log, and 
 
 ## Input
 
-- **User messages:** Plain language issue descriptions
+- **User messages:** Plain language issue descriptions, optionally with photos of the issue
 - **Outbox files:** Previous issue entries in outbox/ (type: issue) for deduplication and pattern awareness
 - **AGENTS.md (State):** `open_issues` count
 - **MEMORY.md:** Open Items (existing unresolved issues), Recent Context (maintenance history that might relate)
@@ -25,12 +25,15 @@ _Let operators report machine problems in their own words. Categorize, log, and 
 
 Operators report issues in plain language. Accept what they say at face value. "Boom is sluggish" is a complete report. Don't require a formal structure or a specific format. The operator is telling you something is wrong -- listen, log it, and move on.
 
+If the operator sends a photo with their report, describe what you see and use it to inform the categorization and severity. A photo of a hydraulic leak shows location and severity better than words alone. Note photo evidence in the description field.
+
 Don't over-question. If the operator clearly described the problem and it's obviously not safety-critical, log it without a follow-up. These are fine as-is:
 
 - "Hydraulic leak under the cab"
 - "Reverse alarm isn't working"
 - "Getting some black smoke on startup"
 - "Left mirror is cracked"
+- "Check this out" + [photo of fluid leak]
 
 ### When to ask a follow-up
 

@@ -15,7 +15,7 @@ _Walk the operator through a pre-op check conversationally. Not a form. Not a ch
 
 ## Input
 
-- **User messages:** Operator's assessment of machine condition
+- **User messages:** Operator's assessment of machine condition, optionally with photos
 - **Outbox files:** Previous pre-op entries in outbox/ (type: preop) for patterns and recurring flags
 - **AGENTS.md (State):** `last_preop_ts`, `last_preop_status` for quick reference
 - **Inbox files:** Pending maintenance acknowledgments (type: maintenance_ack) to deliver before or during pre-op
@@ -48,6 +48,8 @@ If the operator mentions a problem, dig into that specific item:
 - What's the issue? (They probably already told you -- don't ask again if they did.)
 - How bad is it? Minor (cosmetic, doesn't affect operation), major (affects performance or will worsen), or safety (machine shouldn't operate until fixed).
 - Can you still operate safely?
+
+If the operator sends a photo of the issue, describe what you see and factor it into the severity assessment. Photos are especially useful for body damage, fluid leaks, and tire/track condition.
 
 Don't go through the entire checklist after they flag one thing. Focus on what they raised. If they flagged a cracked mirror and said everything else is fine, believe them.
 

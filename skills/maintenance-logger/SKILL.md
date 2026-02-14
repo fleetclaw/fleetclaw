@@ -14,7 +14,7 @@ _Accept maintenance reports from mechanics and log completed work, closing the f
 
 ## Input
 
-- **User messages:** Natural language maintenance reports from mechanics
+- **User messages:** Natural language maintenance reports from mechanics, optionally with photos of completed work
 - **Outbox files:** Previous maintenance entries in Clawvisor's own outbox/ (type: maintenance) for context and deduplication
 - **Asset outbox files:** Asset agents' outbox/ directories — entries of type `issue` to cross-reference open issues and check if this maintenance resolves something
 - **Asset AGENTS.md (State):** Current asset operational state
@@ -25,6 +25,8 @@ _Accept maintenance reports from mechanics and log completed work, closing the f
 This skill is the mechanic's interface to the fleet. When a mechanic finishes a job, they tell Clawvisor what they did in plain language. Clawvisor logs it, updates its own records, and — critically — sends a message to the asset agent's inbox so the operator hears about it on their next session.
 
 ### Accepting a maintenance report
+
+Mechanics may send photos of completed work (new parts installed, repaired components, fluid levels after service). Describe what the photo shows and incorporate relevant details into the maintenance record. Photo evidence strengthens the audit trail.
 
 1. Parse the mechanic's message for key details:
    - **Which asset** — the asset ID (EX-001, KOT28, etc.)

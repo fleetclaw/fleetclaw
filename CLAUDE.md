@@ -58,13 +58,14 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 
 - MEMORY.md bootstrap limit: 15,000 chars
 - Heartbeat defaults: asset 30m, clawvisor 2h, clawordinator 4h
-- `activeHours` restricts heartbeats to operational hours (e.g., 06:00-20:00)
+- `activeHours` restricts heartbeats to operational hours -- `start` inclusive, `end` exclusive (`24:00` allowed), `timezone` is IANA format (e.g., `America/Moncton`)
 - HEARTBEAT.md must have real content or heartbeat ticks are skipped
 - Outbox archival: 30-day default retention, OS cron job (not OpenClaw cron). Canonical reference: `docs/scheduling.md`
 - `.clawvisor-last-read` marker file must never be archived or deleted
 - Model vision: include `"image"` in the model's `input` array to enable photo routing to the primary model
 - Photos uploaded via channels are ephemeral (2-min TTL, `~/.openclaw/media/inbound/`) -- only the first photo per message is processed by default
 - Model registry: `~/.openclaw/agents/main/agent/models.json` takes precedence over `openclaw.json` for model definitions -- edit both files and restart the agent after any model config change
+- `openclaw doctor --fix` diagnoses and auto-migrates config schema between versions; creates `.bak` backup. "Config invalid" warnings expected when run outside systemd (env vars unresolvable) -- best-effort mode proceeds fine
 
 ## When Editing Skills
 
@@ -82,3 +83,10 @@ Agent identity templates live in `templates/soul-{type}.md`. They are intentiona
 - When removing numbered steps, renumber the remaining steps -- don't leave gaps
 - Use "agent role" (not "agent type") when referring to asset/clawvisor/clawordinator to avoid confusion with equipment types
 - When removing a concept, grep the entire repo -- skills, docs, CLAUDE.md, and templates may all reference it
+
+## When Editing Implementation or Platform Docs
+
+- Keep all three platform files in sync: `platform/ubuntu.md`, `platform/macos.md`, `platform/windows.md` -- memory limits, ExecStart patterns, env examples must match
+- When documenting openclaw.json paths, use the correct nesting: `skipBootstrap`, `heartbeat`, `model`, `models` (allowlist), `compaction` go under `agents.defaults` -- `tools`, `skills`, `models` (provider definitions with `mode: "merge"`) go at root level
+- Use "since X.Y.Z" not "in X.Y.Z" for OpenClaw version requirements -- stays accurate across upgrades
+- Verify doc claims against OpenClaw source at `/usr/lib/node_modules/openclaw/dist/` when uncertain -- existing docs have had errors

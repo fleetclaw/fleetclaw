@@ -145,10 +145,15 @@ sudo npm install -g openclaw@<version>
 # 3. Verify version
 openclaw --version
 
-# 4. Start all agents
+# 4. Run config migration on each agent
+for id in ex001 ex002 ex003 clawvisor clawordinator; do
+  sudo -u fc-$id openclaw doctor --fix
+done
+
+# 5. Start all agents
 launchctl load /Library/LaunchDaemons/com.fleetclaw.agent.*.plist
 
-# 5. Check status
+# 6. Check status
 launchctl list | grep fleetclaw
 ```
 

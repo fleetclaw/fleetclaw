@@ -109,10 +109,17 @@ npm install -g openclaw@<version>
 # 3. Verify version
 openclaw --version
 
-# 4. Start all agent services
+# 4. Run config migration on each agent
+$agents = @("ex001", "ex002", "ex003", "clawvisor", "clawordinator")
+foreach ($id in $agents) {
+    Start-Process -FilePath "openclaw.cmd" -ArgumentList "doctor --fix" `
+        -WorkingDirectory "C:\FleetClaw\agents\fc-$id\.openclaw" -NoNewWindow -Wait
+}
+
+# 5. Start all agent services
 Get-Service fc-agent-* | Start-Service
 
-# 5. Check status
+# 6. Check status
 Get-Service fc-agent-* | Format-Table Name, Status
 ```
 

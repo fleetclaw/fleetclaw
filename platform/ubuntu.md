@@ -129,10 +129,15 @@ sudo npm install -g openclaw@<version>
 # 4. Verify version
 openclaw --version
 
-# 5. Start all agent services
+# 5. Run config migration on each agent
+for id in ex001 ex002 ex003 clawvisor clawordinator; do
+  sudo -u fc-$id bash -c "source /opt/fleetclaw/env/$id.env && openclaw doctor --fix"
+done
+
+# 6. Start all agent services
 sudo systemctl start fc-agent-*
 
-# 6. Verify all running (wait ~30s for startup)
+# 7. Verify all running (wait ~30s for startup)
 systemctl is-active fc-agent-*
 ```
 

@@ -63,9 +63,15 @@ All agents on a host share the same globally-installed OpenClaw binary (`/usr/bi
    openclaw --version
    ```
 
-5. **Start all agent services.** See the platform docs for OS-specific start commands.
+5. **Run config migration on each agent** (while services are still stopped):
+   ```bash
+   sudo -u fc-ex001 bash -c "source /opt/fleetclaw/env/ex001.env && openclaw doctor --fix"
+   ```
+   Repeat for each agent. This migrates openclaw.json to the new version's config schema (creates a `.bak` backup). Ignore "Config invalid" warnings — doctor can't resolve `${ENV_VAR}` references outside systemd, but proceeds in best-effort mode. At runtime, the EnvironmentFile supplies the values.
 
-6. **Verify services are running.** Gateway warmup takes 3-4 minutes while TypeScript plugins compile — services may report as active before the agent is fully responsive. Check logs to confirm the gateway is ready.
+6. **Start all agent services.** See the platform docs for OS-specific start commands.
+
+7. **Verify services are running.** Gateway warmup takes 3-4 minutes while TypeScript plugins compile — services may report as active before the agent is fully responsive. Check logs to confirm the gateway is ready.
 
 ### Rollback
 
@@ -73,7 +79,7 @@ Same procedure: stop services, install the previous version (`sudo npm install -
 
 ### Breaking changes
 
-Check OpenClaw release notes before upgrading. If a release changes config format, update all agents' `openclaw.json` files while services are stopped.
+Check OpenClaw release notes before upgrading. `openclaw doctor --fix` handles most config schema migrations automatically. For changes that require manual intervention, update all agents' `openclaw.json` files while services are stopped.
 
 ### What doesn't change
 

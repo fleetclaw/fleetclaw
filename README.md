@@ -16,11 +16,11 @@
       <img src="https://raw.githubusercontent.com/fleetclaw/fleetclaw/main/docs/assets/fleetclaw-logo-text.png" alt="FleetClaw" width="500">
     </picture>
   </p>
-  <h3>Digital Operators for Every Machine</h3>
+  <h3></h3>
 
 
   <p align="center">
-    A skill library and architecture reference that gives every piece of mining equipment its own AI agent. Built on <a href="https://github.com/openclaw/openclaw">OpenClaw</a>.
+    Built on <a href="https://github.com/openclaw/openclaw">OpenClaw</a>.
     <br />
     <a href="https://github.com/fleetclaw/fleetclaw/issues/new?labels=bug">Report Bug</a>
     ·
